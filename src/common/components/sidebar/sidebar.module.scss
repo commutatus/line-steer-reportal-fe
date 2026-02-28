@@ -1,0 +1,26 @@
+.sidebar {
+  overflow: hidden;
+  position: sticky !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100vh;
+
+  @media screen and (max-width: 992px) {
+    position: fixed !important;
+    z-index: 5;
+  }
+}
+
+.sidebar-menu {
+  :global {
+    .ant-menu-submenu-title:hover {
+      color: var(--white-color) !important;
+    }
+    .ant-menu-submenu-selected {
+      .ant-menu-submenu-title {
+        color: var(--white-color) !important;
+      }
+    }
+  }
+}
