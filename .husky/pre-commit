@@ -1,0 +1,11 @@
+echo '🏗️👷 Testing the build before committing'
+
+npm run test-all ||
+(
+    echo '\n\n❌👷🔨❌ Build Failed ❌👷🔨❌
+            Next build failed: View the errors above to see why.
+    '
+    false;
+)
+
+echo '✅✅✅✅ Production build successful ✅✅✅✅'

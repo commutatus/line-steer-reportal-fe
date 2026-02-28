@@ -1,0 +1,30 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install
+        - npm i -g @commutatus/cm-env npmrc-replace-env --no-save
+        - |
+          if [ "${ENV}" = "prod" ]; then
+            echo $DECRYPTION_KEY_PROD > .production.key;
+            npm run decrypt-prod;
+          elif [ "${ENV}" = "staging" ]; then
+            echo $DECRYPTION_KEY_STAGING > .staging.key;
+            npm run decrypt-staging;
+          elif [ "${ENV}" = "beta" ]; then
+            echo $DECRYPTION_KEY_BETA > .beta.key;
+            npm run decrypt-beta;
+          fi
+        - npm run npmrc-replace-env
+        - npm install
+    build:
+      commands:
+        - npm run build:$ENV
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
