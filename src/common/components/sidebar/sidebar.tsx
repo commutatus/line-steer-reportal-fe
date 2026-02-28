@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button, Menu, MenuProps } from "antd";
 import classNames from "classnames/bind";
 import styles from "./sidebar.module.scss";
-import Image from "next/image";
 import { useGlobals } from "@/common/context/globals";
 import useResponsive from "@/common/hooks/useResponsive";
 import Link from "next/link";
@@ -35,21 +34,25 @@ const SideBarHeader = (sidebarProps: {
     >
       <div className="inline-flex items-center transition-all duration-300 overflow-hidden">
         {isSidebarCollapsed && (
-          <Image
-            src="/assets/images/cropped-logo.png"
-            alt="Logo"
-            width={24}
-            height={24}
-          />
+          // TODO: Add brand logo
+          // <Image
+          //   src="/assets/images/"
+          //   alt="Logo"
+          //   width={24}
+          //   height={24}
+          // />
+          <h1>LSR</h1>
         )}
 
         {!isSidebarCollapsed && (
-          <Image
-            src="/assets/images/sb_cheil_2025_logos.png"
-            alt="Logo"
-            width={100}
-            height={40}
-          />
+          // TODO: Add brand logo
+          // <Image
+          //   src="/assets/images/sb_cheil_2025_logos.png"
+          //   alt="Logo"
+          //   width={100}
+          //   height={40}
+          // />
+          <h1>Line Steer Reportal</h1>
         )}
       </div>
       {!isSidebarCollapsed && (
