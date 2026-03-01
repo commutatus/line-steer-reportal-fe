@@ -1,17 +1,14 @@
 import { gql } from "@apollo/client";
 
-export const LOGIN = gql`
-  mutation Login($loginInput: LoginInput!) {
-    login(input: $loginInput) {
-      accessToken
-      refreshToken
-    }
+export const REQUEST_OTP = gql`
+  mutation RequestOtp($input: RequestOtpInput!) {
+    requestOtp(input: $input)
   }
 `;
 
-export const SIGNUP = gql`
-  mutation SignUp($userInput: SignUpInput!) {
-    signUp(input: $userInput) {
+export const VERIFY_OTP = gql`
+  mutation VerifyOtp($input: VerifyOtpInput!) {
+    verifyOtp(input: $input) {
       accessToken
       refreshToken
     }
