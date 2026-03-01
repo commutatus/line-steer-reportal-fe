@@ -15,6 +15,8 @@ import {
   FileTextOutlined,
   LineChartOutlined,
 } from "@ant-design/icons";
+import Image from "next/image";
+
 const cx = classNames.bind(styles);
 
 const SideBarHeader = (sidebarProps: {
@@ -32,7 +34,7 @@ const SideBarHeader = (sidebarProps: {
         },
       )}
     >
-      <div className="inline-flex items-center transition-all duration-300 overflow-hidden">
+      <div className="inline-flex items-center transition-all duration-300 overflow-hidden mx-auto">
         {isSidebarCollapsed && (
           // TODO: Add brand logo
           // <Image
@@ -45,14 +47,12 @@ const SideBarHeader = (sidebarProps: {
         )}
 
         {!isSidebarCollapsed && (
-          // TODO: Add brand logo
-          // <Image
-          //   src="/assets/images/sb_cheil_2025_logos.png"
-          //   alt="Logo"
-          //   width={100}
-          //   height={40}
-          // />
-          <h1>Line Steer Reportal</h1>
+          <Image
+            src="/assets/images/reportal-logo.png"
+            alt="Logo"
+            width={100}
+            height={40}
+          />
         )}
       </div>
       {!isSidebarCollapsed && (
