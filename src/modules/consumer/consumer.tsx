@@ -1,42 +1,31 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import CalendarPlan from "./components/CalendarPlan";
 import TablePlan from "./components/TablePlan";
 import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
-import { initializeMockData, savePlanData } from "@/common/utils/data/mockData";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "./consumer.graphql";
+import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables } from "@/generated/graphql";
+import { useRouter } from "next/router";
 
 const Consumer = () => {
-  // const [plants, setPlants] = useState<Plant[]>([]);
-  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
-  // const [allPlans, setAllPlans] = useState<Record<string, DailyPlan[]>>({});
-  const [allPlanData, setAllPlanData] = useState<Record<string, Record<string, TimeSlot[]>>>({});
-  const {} = useQuery(GET_LOAD_SCHEDULED_DAYS, {
-    
+  const router = useRouter();
+  const plantId = (router.query.plantId as string) || "1";
+
+  const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
+    variables: {
+      filters: {
+        parkIds: [plantId],
+      }
+    },
+    skip: !plantId,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const { plants: loadedPlants, allPlanData: loadedPlanData } = 
-        initializeMockData(false);
-      // setPlants(loadedPlants);
-      // setAllPlans(loadedPlans);
-      setAllPlanData(loadedPlanData);
-      if (loadedPlants.length > 0) {
-        setSelectedPlantId(loadedPlants[0].id);
-      }
-      setIsLoading(false);
-    };
-    loadData();
-  }, []);
 
   const handleDayClick = (date: string) => {
     setSelectedDate(date);
@@ -44,21 +33,29 @@ const Consumer = () => {
   };
 
   const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
-    if (!selectedPlantId) return;
-    const updatedPlanData = { ...allPlanData };
-    const updatedPlans = {};
-    savePlanData(selectedPlantId, date, timeSlots, updatedPlanData, updatedPlans);
-    setAllPlanData(updatedPlanData);
-    message.success(`Saved plan for ${date}`);
+    message.success(`Saved plan for ${date} with ${timeSlots.length} time slots`);
     setIsDayPlanSheetOpen(false);
   };
 
-  const getInitialTimeSlots = (): TimeSlot[] | undefined => {
-    if (!selectedPlantId || !selectedDate) return undefined;
-    return allPlanData[selectedPlantId]?.[selectedDate];
-  };
+  const initialTimeSlots = useMemo((): TimeSlot[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
 
-  if (isLoading) {
+    return loadScheduleDay.loadSchedules.map((schedule) => ({
+      time: schedule.startTime || '',
+      mw: schedule.load || null,
+    }));
+  }, [selectedDate, loadScheduledDays]);
+
+  const loadScheduleIds = useMemo((): string[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
+    return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
+  }, [selectedDate, loadScheduledDays]);
+
+  if (loadScheduledDaysLoading) {
     return (
       <RootLayout pageTitle="Consumer">
         <div className="min-h-screen flex items-center justify-center">
@@ -68,32 +65,30 @@ const Consumer = () => {
     );
   }
 
-  const tabItems = selectedPlantId
-    ? [
-        {
-          key: "1",
-          label: "Calendar",
-          children: (
-            <CalendarPlan
-              plantId={selectedPlantId}
-              allPlanData={allPlanData}
-              onDayClick={handleDayClick}
-            />
-          ),
-        },
-        {
-          key: "2",
-          label: "Table",
-          children: (
-            <TablePlan
-              plantId={selectedPlantId}
-              allPlanData={allPlanData}
-              onDayClick={handleDayClick}
-            />
-          ),
-        },
-      ]
-    : [];
+  const tabItems = [
+    {
+      key: "1",
+      label: "Calendar",
+      children: (
+        <CalendarPlan
+          plantId={plantId}
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+        />
+      ),
+    },
+    {
+      key: "2",
+      label: "Table",
+      children: (
+        <TablePlan
+          plantId={plantId}
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+        />
+      ),
+    },
+  ];
 
   return (
     <RootLayout pageTitle="Consumer">
@@ -106,7 +101,9 @@ const Consumer = () => {
         open={isDayPlanSheetOpen}
         onOpenChange={setIsDayPlanSheetOpen}
         onSave={handleSaveTimeSlots}
-        initialData={getInitialTimeSlots()}
+        initialData={initialTimeSlots}
+        loadScheduleIds={loadScheduleIds}
+        plantId={plantId}
       />
     </RootLayout>
   );

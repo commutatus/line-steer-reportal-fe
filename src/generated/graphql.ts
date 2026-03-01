@@ -115,6 +115,20 @@ export type DateRange = {
   to?: InputMaybe<Scalars['ISO8601DateTime']['input']>;
 };
 
+export type DayLoadSummary = {
+  __typename?: 'DayLoadSummary';
+  date: Scalars['ISO8601Date']['output'];
+  factoryLoads: Array<FactoryLoadEntry>;
+  parkLoads: Array<ParkLoadEntry>;
+  totalLoad: Scalars['Float']['output'];
+};
+
+export type DayLoadSummaryPage = {
+  __typename?: 'DayLoadSummaryPage';
+  data: Array<DayLoadSummary>;
+  paging: PagingType;
+};
+
 export type Factory = {
   __typename?: 'Factory';
   consumer?: Maybe<Consumer>;
@@ -130,6 +144,12 @@ export type Factory = {
 export type FactoryFilterInput = {
   ids?: InputMaybe<Array<Scalars['Int']['input']>>;
   q?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type FactoryLoadEntry = {
+  __typename?: 'FactoryLoadEntry';
+  factory: Factory;
+  totalLoad: Scalars['Float']['output'];
 };
 
 export type FactoryPagingType = {
@@ -166,6 +186,7 @@ export type LoadSchedule = {
   load?: Maybe<Scalars['Float']['output']>;
   loadScheduleDay?: Maybe<LoadScheduleDay>;
   park?: Maybe<Park>;
+  pastAverageLoad?: Maybe<Scalars['Float']['output']>;
   startTime?: Maybe<Scalars['ISO8601DateTime']['output']>;
   updatedAt: Scalars['ISO8601DateTime']['output'];
 };
@@ -178,6 +199,8 @@ export type LoadScheduleDay = {
   id: Scalars['ID']['output'];
   loadSchedules?: Maybe<Array<LoadSchedule>>;
   park?: Maybe<Park>;
+  status?: Maybe<LoadScheduleDayStatusEnum>;
+  totalLoad: Scalars['Float']['output'];
   updatedAt: Scalars['ISO8601DateTime']['output'];
 };
 
@@ -208,6 +231,15 @@ export type LoadScheduleDaySortInput = {
   column?: InputMaybe<LoadScheduleDaySortColumn>;
   direction?: InputMaybe<SortDirection>;
 };
+
+export enum LoadScheduleDayStatusEnum {
+  /** In Progress status */
+  InProgress = 'in_progress',
+  /** Pending status */
+  Pending = 'pending',
+  /** Ready status */
+  Ready = 'ready'
+}
 
 export type LoadScheduleInput = {
   id: Scalars['ID']['input'];
@@ -294,6 +326,12 @@ export type ParkFilterInput = {
   stateIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export type ParkLoadEntry = {
+  __typename?: 'ParkLoadEntry';
+  park: Park;
+  totalLoad: Scalars['Float']['output'];
+};
+
 export type ParkPagingType = {
   __typename?: 'ParkPagingType';
   data: Array<Park>;
@@ -320,6 +358,8 @@ export type Query = {
   contracts?: Maybe<ContractPagingType>;
   /** Fetch Current User */
   currentUser?: Maybe<User>;
+  /** Fetch daily load summary pivoted by park */
+  dailyLoadSummary?: Maybe<DayLoadSummaryPage>;
   /** Fetch All Factories */
   factories?: Maybe<FactoryPagingType>;
   /** Fetch All Load Schedule Days */
@@ -340,6 +380,12 @@ export type QueryContractsArgs = {
   filters?: InputMaybe<ContractFilterInput>;
   pagination?: InputMaybe<PagingInput>;
   sort?: InputMaybe<ContractSortInput>;
+};
+
+
+export type QueryDailyLoadSummaryArgs = {
+  filters?: InputMaybe<LoadScheduleDayFilterInput>;
+  pagination?: InputMaybe<PagingInput>;
 };
 
 
@@ -436,9 +482,16 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', email: string, firstName?: string | null, fullName?: string | null, id: string, lastName?: string | null, consumer?: { __typename?: 'Consumer', createdAt: any, id: string, name?: string | null } | null, generator?: { __typename?: 'Generator', createdAt: any, id: string, name?: string | null } | null } | null };
 
+export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
+  input: BulkUpdateInput;
+}>;
+
+
+export type BulkUpdateLoadSchedulesMutation = { __typename?: 'Mutation', bulkUpdateLoadSchedules?: Array<{ __typename?: 'LoadSchedule', createdAt: any, endTime?: any | null, id: string, load?: number | null, pastAverageLoad?: number | null, startTime?: any | null, updatedAt: any }> | null };
+
 export type GetLoadScheduleDaysQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
 }>;
 
 
-export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', createdAt: any, date: any, id: string, updatedAt: any, loadSchedules?: Array<{ __typename?: 'LoadSchedule', createdAt: any, endTime?: any | null, id: string, load?: number | null, startTime?: any | null, updatedAt: any }> | null }> } | null };
+export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', createdAt: any, date: any, id: string, updatedAt: any, status?: LoadScheduleDayStatusEnum | null, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null, createdAt: any, updatedAt: any }> | null }> } | null };

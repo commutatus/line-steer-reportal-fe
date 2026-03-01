@@ -1,1 +1,1 @@
-export { default } from "@/modules/overall-plan";
+export { default } from "@/modules/overall-plan"

@@ -6,7 +6,7 @@ const LoadGraph = () => {
     <RootLayout pageTitle="Load Graph">
       <div>LoadGraph</div>
     </RootLayout>
-  )
-}
+  );
+};
 
 export default LoadGraph;

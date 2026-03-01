@@ -1,27 +1,27 @@
 import dayjs from "dayjs";
 import { Table, Tag } from "antd";
-import { TimeSlot } from "@/common/utils/data/types";
-import { getFillStatus, calculateDayTotalMW, FillStatus } from "@/common/utils/data/mockData";
 import { fillConfig } from "./consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { LoadScheduleDay } from "../consumer.types";
+import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 interface TablePlanProps {
   plantId: string;
-  allPlanData: Record<string, Record<string, TimeSlot[]>>;
+  loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
 }
 
 const TablePlan = (props: TablePlanProps) => {
-  const { plantId, allPlanData, onDayClick } = props;
+  const { loadScheduledDays, onDayClick } = props;
   const now = dayjs();
   const daysInMonth = now.daysInMonth();
 
   const rows = Array.from({ length: daysInMonth }, (_, i) => {
     const date = now.date(i + 1);
     const dateStr = date.format("YYYY-MM-DD");
-    const timeSlots = allPlanData[plantId]?.[dateStr];
-    const totalMW = calculateDayTotalMW(timeSlots || []);
-    const fillStatus = getFillStatus(timeSlots);
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === dateStr);
+    const totalMW = loadScheduleDay?.loadSchedules?.reduce((sum, schedule) => sum + (schedule.load || 0), 0) || 0;
+    const fillStatus = loadScheduleDay?.status ?? LoadScheduleDayStatusEnum.Pending;
     return {
       key: dateStr,
       date: dateStr,
@@ -49,7 +49,7 @@ const TablePlan = (props: TablePlanProps) => {
       title: "Status",
       dataIndex: "fillStatus",
       key: "fillStatus",
-      render: (status: FillStatus) => {
+      render: (status: LoadScheduleDayStatusEnum) => {
         const config = fillConfig[status];
         return (
           <Tag color={config.color}>
@@ -83,7 +83,7 @@ const TablePlan = (props: TablePlanProps) => {
         size="middle"
         onRow={(record) => ({
           onClick: () => onDayClick?.(record.date),
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
         })}
       />
     </div>

@@ -1,1 +1,1 @@
-export { default } from "@/modules/load-graph";
+export { default } from "@/modules/load-graph"

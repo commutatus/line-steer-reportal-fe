@@ -1,1 +1,1 @@
-export { default } from "@/modules/day-wise-plan";
+export { default } from "@/modules/day-wise-plan"

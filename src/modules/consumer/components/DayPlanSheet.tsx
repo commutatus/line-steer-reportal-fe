@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { Drawer, Button, Space, InputNumber, Table } from "antd";
+import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
+import { gql, useMutation } from "@apollo/client";
+import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
+import { GET_LOAD_SCHEDULED_DAYS } from "../consumer.graphql";
 
 interface DayPlanSheetProps {
   date: string | null;
@@ -8,6 +11,8 @@ interface DayPlanSheetProps {
   onOpenChange: (open: boolean) => void;
   onSave: (date: string, timeSlots: TimeSlot[]) => void;
   initialData?: TimeSlot[];
+  loadScheduleIds?: string[];
+  plantId: string;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -21,6 +26,20 @@ const generateTimeSlots = (): TimeSlot[] => {
   return slots;
 };
 
+const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
+  mutation BulkUpdateLoadSchedules($input: BulkUpdateInput!) {
+    bulkUpdateLoadSchedules(input: $input) {
+      createdAt
+      endTime
+      id
+      load
+      pastAverageLoad
+      startTime
+      updatedAt
+    }
+  }
+`;
+
 interface HourRow {
   key: number;
   hour: string;
@@ -31,9 +50,26 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData } = props;
+  const { date, open, onOpenChange, onSave, initialData, loadScheduleIds, plantId } = props;
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
+  );
+  const [bulkUpdateLoadSchedules, { 
+    loading: bulkUpdateLoadSchedulesLoading,
+  }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(
+    BULK_UPDATE_LOAD_SCHEDULES_MUTATION,
+    {
+      refetchQueries: [
+        {
+          query: GET_LOAD_SCHEDULED_DAYS,
+          variables: {
+            filters: {
+              parkIds: [plantId],
+            },
+          },
+        },
+      ],
+    }
   );
 
   useEffect(() => {
@@ -51,10 +87,31 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
     });
   };
 
-  const handleSave = () => {
-    if (date) {
+  const handleSave = async () => {
+    if (!date || !loadScheduleIds || loadScheduleIds.length === 0) {
+      message.error("Unable to save: missing schedule data");
+      return;
+    }
+
+    try {
+      const loadSchedules = timeSlots.map((slot, index) => ({
+        id: loadScheduleIds[index],
+        load: slot.mw || 0,
+      }));
+
+      await bulkUpdateLoadSchedules({
+        variables: {
+          input: {
+            loadSchedules,
+          },
+        },
+      });
+
+      message.success(`Saved plan for ${date}`);
       onSave(date, timeSlots);
       onOpenChange(false);
+    } catch {
+      message.error("Failed to save plan. Please try again.");
     }
   };
 
@@ -125,8 +182,14 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
       size={540}
       footer={
         <Space className="w-full justify-end">
-          <Button onClick={handleCancel}>Cancel</Button>
-          <Button type="primary" onClick={handleSave}>
+          <Button onClick={handleCancel} disabled={bulkUpdateLoadSchedulesLoading}>
+            Cancel
+          </Button>
+          <Button 
+            type="primary" 
+            onClick={handleSave}
+            loading={bulkUpdateLoadSchedulesLoading}
+          >
             Save
           </Button>
         </Space>

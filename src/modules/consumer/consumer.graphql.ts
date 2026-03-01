@@ -8,12 +8,13 @@ export const GET_LOAD_SCHEDULED_DAYS = gql`
         date
         id
         updatedAt
+        status
         loadSchedules {
-          createdAt
-          endTime
           id
-          load
           startTime
+          endTime
+          load
+          createdAt
           updatedAt
         }
       }

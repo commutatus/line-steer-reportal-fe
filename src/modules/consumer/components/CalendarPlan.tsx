@@ -3,26 +3,26 @@ import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
-import { TimeSlot } from "@/common/utils/data/types";
-import { getFillStatus, FillStatus } from "@/common/utils/data/mockData";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { fillConfig } from "./consumer-utils";
+import { LoadScheduleDay } from "../consumer.types";
+import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 const cx = classNames.bind(styles);
 
 interface CalendarPlanProps {
   plantId: string;
-  allPlanData: Record<string, Record<string, TimeSlot[]>>;
+  loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
 }
 
 const CalendarPlan = (props: CalendarPlanProps) => {
-  const { plantId, allPlanData, onDayClick } = props;
+  const { loadScheduledDays, onDayClick } = props;
 
-  const getStatusForDate = (date: Dayjs): FillStatus => {
+  const getStatusForDate = (date: Dayjs): LoadScheduleDayStatusEnum => {
     const dateStr = date.format("YYYY-MM-DD");
-    const timeSlots = allPlanData[plantId]?.[dateStr];
-    return getFillStatus(timeSlots);
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === dateStr);
+    return loadScheduleDay?.status ?? LoadScheduleDayStatusEnum.Pending;
   };
 
   const dateCellRender = (date: Dayjs) => {
