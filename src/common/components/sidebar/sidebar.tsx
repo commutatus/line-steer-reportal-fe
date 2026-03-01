@@ -76,9 +76,9 @@ const Sidebar = () => {
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
     const planningHref = "/consumer";
-    const dayWisePlanHref = "/reports/day-wise-plan";
-    const overallPlanHref = "/reports/overall-plan";
-    const loadGraphHref = "/reports/load-graph";
+    const dayWisePlanHref = "/consumer/reports/day-wise-plan";
+    const overallPlanHref = "/consumer/reports/overall-plan";
+    const loadGraphHref = "/consumer/reports/load-graph";
 
     return [
       {

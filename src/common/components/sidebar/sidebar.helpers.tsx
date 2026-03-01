@@ -10,17 +10,17 @@ export const routeToMenuMap: {
   [pathPrefix: string]: { selectedKey: MenuKeys; openKey?: MenuKeys };
 } = {
   "/": { selectedKey: MenuKeys.PLANNING },
-  "/planning": { selectedKey: MenuKeys.PLANNING },
-  "/reports": { selectedKey: MenuKeys.REPORTS },
-  "/reports/day-wise-plan": {
+  "/consumer": { selectedKey: MenuKeys.PLANNING },
+  "/consumer/reports": { selectedKey: MenuKeys.REPORTS },
+  "/consumer/reports/day-wise-plan": {
     selectedKey: MenuKeys.DAY_WISE_PLAN,
     openKey: MenuKeys.REPORTS,
   },
-  "/reports/overall-plan": {
+  "/consumer/reports/overall-plan": {
     selectedKey: MenuKeys.OVERALL_PLAN,
     openKey: MenuKeys.REPORTS,
   },
-  "/reports/load-graph": {
+  "/consumer/reports/load-graph": {
     selectedKey: MenuKeys.LOAD_GRAPH,
     openKey: MenuKeys.REPORTS,
   },
