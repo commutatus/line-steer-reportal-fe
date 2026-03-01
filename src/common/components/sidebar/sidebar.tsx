@@ -77,7 +77,7 @@ const Sidebar = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
-    const planningHref = "/planning";
+    const planningHref = "/consumer";
     const dayWisePlanHref = "/reports/day-wise-plan";
     const overallPlanHref = "/reports/overall-plan";
     const loadGraphHref = "/reports/load-graph";

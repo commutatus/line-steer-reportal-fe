@@ -10,6 +10,16 @@ const GET_CURRENT_USER = gql`
       fullName
       id
       lastName
+      consumer {
+        createdAt
+        id
+        name
+      }
+      generator {
+        createdAt
+        id
+        name
+      }
     }
   }
 `;
@@ -17,32 +27,26 @@ const GET_CURRENT_USER = gql`
 type useCurrentUserProps = {
   authState: AuthStatesEnum;
 };
-// TODO: Remove this
+
 const useCurrentUser = (props: useCurrentUserProps) => {
   const { authState } = props;
-  const { ...rest } = useQuery<
+  const { data, ...rest } = useQuery<
     CurrentUserQuery,
     CurrentUserQueryVariables
   >(GET_CURRENT_USER, {
-    skip: true, // TODO: Remove this
+    skip: authState !== AuthStatesEnum.loggedIn,
     fetchPolicy: "cache-and-network",
   });
 
-  // const currentUser = data?.currentUser;
+  const currentUser = data?.currentUser;
 
   if (authState === AuthStatesEnum.loggedOut) {
     return null;
   }
 
   return {
+    data: currentUser,
     ...rest,
-    data: {
-      email: "amal",
-      firstName: "Amal",
-      fullName: "Amal",
-      id: "1",
-      lastName: "Amal",
-    },
   };
 }
 
