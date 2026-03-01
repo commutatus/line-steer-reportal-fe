@@ -3,7 +3,7 @@ import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
 import { gql, useMutation } from "@apollo/client";
 import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
-import { GET_LOAD_SCHEDULED_DAYS } from "../consumer.graphql";
+import { GET_LOAD_SCHEDULED_DAYS } from "../../../common/graphql/consumer.graphql";
 
 interface DayPlanSheetProps {
   date: string | null;

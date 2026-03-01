@@ -5,26 +5,8 @@ import { GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables, LoadSchedu
 import { fillConfig } from "../consumer/components/consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import { gql, useQuery } from "@apollo/client";
-
-const DAY_WISE_PLAN_QUERY = gql`
-  query GetDayWisePlanQuery($filters: LoadScheduleDayFilterInput) {
-    loadScheduleDays (filters: $filters) {
-        data {
-          createdAt
-          date
-          id
-          status
-          totalLoad
-          updatedAt
-          park {
-            id
-            name
-          }
-      }
-    }
-  }
-`;
+import { useQuery } from "@apollo/client";
+import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 
 const DayWisePlan = () => {
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");

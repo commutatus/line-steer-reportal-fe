@@ -6,7 +6,7 @@ import TablePlan from "./components/TablePlan";
 import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
-import { GET_LOAD_SCHEDULED_DAYS } from "./consumer.graphql";
+import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables } from "@/generated/graphql";
 import { useRouter } from "next/router";
 

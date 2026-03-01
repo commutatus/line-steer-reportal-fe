@@ -3,26 +3,9 @@ import RootLayout from '@/common/layouts/root-layout';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { GetOverallPlanQuery, GetOverallPlanQueryVariables } from '@/generated/graphql';
-
-const OVERALL_PLAN_QUERY = gql`
-  query GetOverallPlan($filters: LoadScheduleDayFilterInput) {
-    dailyLoadSummary (filters: $filters){
-      data {
-        date
-        totalLoad
-        parkLoads {
-          totalLoad
-          park {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-`;
+import { OVERALL_PLAN_QUERY } from '@/common/graphql/consumer.graphql';
 
 interface TableRow {
   key: number;
