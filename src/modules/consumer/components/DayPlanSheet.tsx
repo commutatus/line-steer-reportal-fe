@@ -1,10 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Drawer, Button, Space, InputNumber, Table } from "antd";
-
-interface TimeSlot {
-  time: string;
-  mw: number | null;
-}
+import { TimeSlot } from "@/common/utils/data/types";
 
 interface DayPlanSheetProps {
   date: string | null;

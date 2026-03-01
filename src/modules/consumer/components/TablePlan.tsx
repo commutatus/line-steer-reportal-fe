@@ -1,29 +1,14 @@
 import dayjs from "dayjs";
 import { Table, Tag } from "antd";
 import { PlusOutlined, SyncOutlined, CheckCircleOutlined } from "@ant-design/icons";
-
-type FillStatus = "empty" | "in_progress" | "complete";
-
-interface TimeSlot {
-  time: string;
-  mw: number | null;
-}
+import { TimeSlot } from "@/common/utils/data/types";
+import { getFillStatus, calculateDayTotalMW, FillStatus } from "@/common/utils/data/mockData";
 
 interface TablePlanProps {
+  plantId: string;
+  allPlanData: Record<string, Record<string, TimeSlot[]>>;
   onDayClick?: (date: string) => void;
 }
-
-const getFillStatus = (timeSlots?: TimeSlot[]): FillStatus => {
-  if (!timeSlots || timeSlots.length === 0) return "empty";
-  const filledCount = timeSlots.filter((slot) => slot.mw !== null && slot.mw > 0).length;
-  if (filledCount === 0) return "empty";
-  if (filledCount === timeSlots.length) return "complete";
-  return "in_progress";
-};
-
-const calculateDayTotalMW = (timeSlots: TimeSlot[]): number => {
-  return timeSlots.reduce((sum, slot) => sum + (slot.mw || 0), 0);
-};
 
 const fillStatusConfig: Record<
   FillStatus,
@@ -35,16 +20,14 @@ const fillStatusConfig: Record<
 };
 
 const TablePlan = (props: TablePlanProps) => {
-  const { onDayClick } = props;
+  const { plantId, allPlanData, onDayClick } = props;
   const now = dayjs();
   const daysInMonth = now.daysInMonth();
-
-  const allPlanData: Record<string, Record<string, TimeSlot[]>> = {};
 
   const rows = Array.from({ length: daysInMonth }, (_, i) => {
     const date = now.date(i + 1);
     const dateStr = date.format("YYYY-MM-DD");
-    const timeSlots = allPlanData[""]?.[dateStr];
+    const timeSlots = allPlanData[plantId]?.[dateStr];
     const totalMW = calculateDayTotalMW(timeSlots || []);
     const fillStatus = getFillStatus(timeSlots);
     return {

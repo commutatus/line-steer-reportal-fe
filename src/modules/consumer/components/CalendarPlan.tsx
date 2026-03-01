@@ -4,14 +4,16 @@ import dayjs from "dayjs";
 import { PlusOutlined, SyncOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
+import { TimeSlot } from "@/common/utils/data/types";
+import { getFillStatus, FillStatus } from "@/common/utils/data/mockData";
 
 const cx = classNames.bind(styles);
 
 interface CalendarPlanProps {
+  plantId: string;
+  allPlanData: Record<string, Record<string, TimeSlot[]>>;
   onDayClick?: (date: string) => void;
 }
-
-type FillStatus = "empty" | "in_progress" | "complete";
 
 const fillConfig: Record<
   FillStatus,
@@ -33,14 +35,16 @@ const fillConfig: Record<
 };
 
 const CalendarPlan = (props: CalendarPlanProps) => {
-  const { onDayClick } = props;
+  const { plantId, allPlanData, onDayClick } = props;
 
-  const getStatusForDate = (): FillStatus => {
-    return "empty";
+  const getStatusForDate = (date: Dayjs): FillStatus => {
+    const dateStr = date.format("YYYY-MM-DD");
+    const timeSlots = allPlanData[plantId]?.[dateStr];
+    return getFillStatus(timeSlots);
   };
 
   const dateCellRender = (date: Dayjs) => {
-    const status = getStatusForDate();
+    const status = getStatusForDate(date);
     const isCurrentMonth = date.month() === dayjs().month();
     if (!isCurrentMonth) return null;
 
@@ -86,7 +90,7 @@ const CalendarPlan = (props: CalendarPlanProps) => {
           mode="month"
           cellRender={(date, info) => {
             if (info.type === "date") {
-              const status = getStatusForDate();
+              const status = getStatusForDate(date);
               const isCurrentMonth = date.month() === dayjs().month();
               const bgClass = isCurrentMonth ? fillConfig[status].bgClass : "";
               return (

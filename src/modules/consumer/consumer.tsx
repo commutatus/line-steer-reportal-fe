@@ -1,18 +1,37 @@
-import { useState } from "react";
-import { Tabs } from "antd";
+import { useState, useEffect } from "react";
+import { Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import CalendarPlan from "./components/CalendarPlan";
 import TablePlan from "./components/TablePlan";
 import DayPlanSheet from "./components/DayPlanSheet";
-
-interface TimeSlot {
-  time: string;
-  mw: number | null;
-}
+import { TimeSlot } from "@/common/utils/data/types";
+import { initializeMockData, savePlanData } from "@/common/utils/data/mockData";
 
 const Consumer = () => {
+  // const [plants, setPlants] = useState<Plant[]>([]);
+  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+  // const [allPlans, setAllPlans] = useState<Record<string, DailyPlan[]>>({});
+  const [allPlanData, setAllPlanData] = useState<Record<string, Record<string, TimeSlot[]>>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const { plants: loadedPlants, allPlanData: loadedPlanData } = 
+        initializeMockData(false);
+      // setPlants(loadedPlants);
+      // setAllPlans(loadedPlans);
+      setAllPlanData(loadedPlanData);
+      if (loadedPlants.length > 0) {
+        setSelectedPlantId(loadedPlants[0].id);
+      }
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
 
   const handleDayClick = (date: string) => {
     setSelectedDate(date);
@@ -20,24 +39,56 @@ const Consumer = () => {
   };
 
   const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
-    // TODO: Implement save logic with backend API
-    // eslint-disable-next-line no-console
-    console.log("Saving plan for", date, "with", timeSlots.length, "time slots");
+    if (!selectedPlantId) return;
+    const updatedPlanData = { ...allPlanData };
+    const updatedPlans = {};
+    savePlanData(selectedPlantId, date, timeSlots, updatedPlanData, updatedPlans);
+    setAllPlanData(updatedPlanData);
+    message.success(`Saved plan for ${date}`);
     setIsDayPlanSheetOpen(false);
   };
 
-  const tabItems = [
-    {
-      key: "1",
-      label: "Calendar",
-      children: <CalendarPlan onDayClick={handleDayClick} />,
-    },
-    {
-      key: "2",
-      label: "Table",
-      children: <TablePlan onDayClick={handleDayClick} />,
-    },
-  ];
+  const getInitialTimeSlots = (): TimeSlot[] | undefined => {
+    if (!selectedPlantId || !selectedDate) return undefined;
+    return allPlanData[selectedPlantId]?.[selectedDate];
+  };
+
+  if (isLoading) {
+    return (
+      <RootLayout pageTitle="Consumer">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </RootLayout>
+    );
+  }
+
+  const tabItems = selectedPlantId
+    ? [
+        {
+          key: "1",
+          label: "Calendar",
+          children: (
+            <CalendarPlan
+              plantId={selectedPlantId}
+              allPlanData={allPlanData}
+              onDayClick={handleDayClick}
+            />
+          ),
+        },
+        {
+          key: "2",
+          label: "Table",
+          children: (
+            <TablePlan
+              plantId={selectedPlantId}
+              allPlanData={allPlanData}
+              onDayClick={handleDayClick}
+            />
+          ),
+        },
+      ]
+    : [];
 
   return (
     <RootLayout pageTitle="Consumer">
@@ -50,6 +101,7 @@ const Consumer = () => {
         open={isDayPlanSheetOpen}
         onOpenChange={setIsDayPlanSheetOpen}
         onSave={handleSaveTimeSlots}
+        initialData={getInitialTimeSlots()}
       />
     </RootLayout>
   );
