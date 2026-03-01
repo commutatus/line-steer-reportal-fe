@@ -4,6 +4,8 @@ import { Avatar, Button, Dropdown, Layout, Space } from "antd";
 const { Header } = Layout;
 import { useGlobals } from "@/common/context/globals";
 import { DownOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
+import PlantSelector from "../plant-selector";
+import { useRouter } from "next/router";
 
 const ProfileDropdown = () => {
   const { auth, currentUser } = useGlobals();
@@ -32,7 +34,7 @@ const ProfileDropdown = () => {
       <Space
         size={4}
         align="center"
-        className="p-[2px] pr-[8px] bg-neutral-fill-tertiary border border-solid border-gray-4 rounded-[40px] cursor-pointer"
+        className="p-[2px] pr-[8px] border border-solid border-gray-300 rounded-[40px] cursor-pointer"
       >
         <Avatar size={24} className="!bg-primary !text-white !text-[12px]">
           {currentUser?.data?.email?.[0]?.toUpperCase?.()}
@@ -45,9 +47,11 @@ const ProfileDropdown = () => {
 
 const Navbar = ({ pageTitle }: { pageTitle?: string }) => {
   const { toggleSidebarCollapse, isSidebarCollapsed } = useGlobals();
+  const router = useRouter();
+  const isConsumerPage = router.pathname === "/consumer";
 
   return (
-    <Header className="flex justify-between !leading-0 items-center sticky top-0 z-[1] !h-[40px] !px-[16px] !py-[8px] !bg-white border-solid border-0 border-b border-gray-3">
+    <Header className="flex justify-between !leading-0 items-center sticky top-0 z-[1] !min-h-[40px] !px-[16px] !py-[8px] !bg-white border-solid border-0 border-b border-gray-3">
       <div className="inline-flex items-center gap-[8px]">
         <div>
           {isSidebarCollapsed && (
@@ -60,7 +64,10 @@ const Navbar = ({ pageTitle }: { pageTitle?: string }) => {
         </div>
         {pageTitle && <div className="inline-flex items-center gap-[8px]">{pageTitle}</div>}
       </div>
-      <ProfileDropdown />
+      <div className="inline-flex items-center gap-[8px]">
+        {isConsumerPage && <PlantSelector />}
+        <ProfileDropdown />
+      </div>
     </Header>
   );
 };

@@ -36,22 +36,20 @@ const SideBarHeader = (sidebarProps: {
     >
       <div className="inline-flex items-center transition-all duration-300 overflow-hidden mx-auto">
         {isSidebarCollapsed && (
-          // TODO: Add brand logo
-          // <Image
-          //   src="/assets/images/"
-          //   alt="Logo"
-          //   width={24}
-          //   height={24}
-          // />
-          <h1>LSR</h1>
+          <Image
+            src="/assets/images/reportal-logo-short.png"
+            alt="Logo"
+            width={30}
+            height={30}
+          />
         )}
 
         {!isSidebarCollapsed && (
           <Image
             src="/assets/images/reportal-logo.png"
             alt="Logo"
-            width={100}
-            height={40}
+            width={130}
+            height={60}
           />
         )}
       </div>
