@@ -5,7 +5,9 @@ import {
 } from "@/generated/graphql";
 import { useMutation } from "@apollo/client";
 import { Button, Form, Input, Typography } from "antd";
-import Image from "next/image";
+import { MailOutlined } from "@ant-design/icons";
+
+const { Title } = Typography;
 
 type LoginProps = {
   userEmail?: string;
@@ -20,16 +22,15 @@ type LoginProps = {
 const Login = (props: LoginProps) => {
   const { userEmail, setUserEmail, isRequestingOtp } = props;
   const { notificationApi } = useGlobals();
+  const [form] = Form.useForm();
 
-  const handleLogin = () => {
-    if (!userEmail) {
-      return;
-    }
+  const handleSendOtp = (values: { email: string }) => {
+    setUserEmail?.(values.email);
     props
       .requestOtp?.({
         variables: {
           input: {
-            email: userEmail,
+            email: values.email,
           },
         },
       })
@@ -45,59 +46,47 @@ const Login = (props: LoginProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <Image
-        src="/assets/images/line-steer-logo.png"
-        alt="Line Steer logo"
-        width={132}
-        height={56}
-      />
-      <Typography.Text className="!mt-[16px] !mb-[24px]">
-        You can sign up or login with your email
-      </Typography.Text>
-      <Form
-        onFinish={handleLogin}
-        requiredMark={false}
-        initialValues={{
-          email: userEmail,
-        }}
-        layout="vertical"
-        className="w-full"
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleSendOtp}
+      requiredMark={false}
+      initialValues={{
+        email: userEmail,
+      }}
+    >
+      <Title level={4} className="text-center mb-2!">
+        Enter your email to login
+      </Title>
+      <Form.Item
+        name="email"
+        label="Email"
+        rules={[
+          { required: true, message: "Please enter your email" },
+          { type: "email", message: "Please enter a valid email" },
+        ]}
       >
-        <Form.Item name="email" label="Email">
-          <Input
-            placeholder="Enter your email"
-            value={userEmail}
-            onChange={(e) => setUserEmail?.(e.target.value)}
-            type="email"
-            required
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            disabled={isRequestingOtp}
-            loading={isRequestingOtp}
-            block
-          >
-            Continue
-          </Button>
-          <div className="text-center mt-[8px]">
-            <Typography.Text type="secondary">
-              By continuing, you agree to our {/* TODO: add link */}
-              <a
-                href="#"
-                target="_blank"
-                className="!text-black !hover:text-black !underline"
-              >
-                terms & conditions
-              </a>
-            </Typography.Text>
-          </div>
-        </Form.Item>
-      </Form>
-    </div>
+        <Input
+          prefix={<MailOutlined className="text-gray-400" />}
+          placeholder="you@example.com"
+          size="large"
+          className="rounded-lg"
+        />
+      </Form.Item>
+      <Form.Item className="mb-0 mt-6">
+        <Button
+          type="primary"
+          htmlType="submit"
+          size="large"
+          block
+          className="h-12 rounded-lg font-semibold !bg-black hover:!bg-gray-800"
+          style={{ border: "none" }}
+          loading={isRequestingOtp}
+        >
+          Send OTP
+        </Button>
+      </Form.Item>
+    </Form>
   );
 };
 

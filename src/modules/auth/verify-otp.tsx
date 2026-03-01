@@ -8,7 +8,10 @@ import {
 } from "@/generated/graphql";
 import { useMutation } from "@apollo/client";
 import { Button, Form, Input, Typography } from "antd";
+import { ArrowLeftOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
+
+const { Text, Title } = Typography;
 
 type VerifyOtpProps = {
   userEmail?: string;
@@ -50,19 +53,23 @@ const VerifyOtp = (props: VerifyOtpProps) => {
 
   const canResendOtp = otpTimeRemaining <= 0;
 
-  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOtpValue(e.target.value);
+  const handleOtpChange = (value: string) => {
+    setOtpValue(value);
+    if (value.length === 6) {
+      handleVerifyOtp(value);
+    }
   };
 
-  const handleVerifyOtp = () => {
-    if (!otpValue || !props.userEmail) {
+  const handleVerifyOtp = (otp?: string) => {
+    const otpToVerify = otp || otpValue;
+    if (!otpToVerify || !props.userEmail) {
       return;
     }
 
     const variables: VerifyOtpMutationVariables = {
       input: {
         email: props.userEmail,
-        otp: otpValue,
+        otp: otpToVerify,
       },
     };
 
@@ -81,7 +88,9 @@ const VerifyOtp = (props: VerifyOtpProps) => {
           accessToken,
           refreshToken,
         });
-        props.showLogin?.();
+        notificationApi?.success({
+          message: "Login successful",
+        });
       })
       .catch((error) => {
         const message =
@@ -121,59 +130,52 @@ const VerifyOtp = (props: VerifyOtpProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <Typography.Title className="!text-[20px]">Enter OTP</Typography.Title>
-      <Typography.Text type="secondary" className="!mb-[24px]">
-        OTP sent to <span className="text-black">{props.userEmail}.</span>{" "}
-        <Button
-          type="link"
-          onClick={props.showLogin}
-          size="small"
-          className="!p-0"
-        >
-          Not you?
-        </Button>
-      </Typography.Text>
-      <Form
-        onFinish={handleVerifyOtp}
-        layout="vertical"
-        requiredMark={false}
-        className="w-full"
+    <Form className="flex flex-col items-center gap-2">
+      <Button
+        type="text"
+        icon={<ArrowLeftOutlined />}
+        onClick={props.showLogin}
+        className="!text-gray-500 hover:!text-gray-700 mb-4 mr-auto"
+        size="small"
       >
-        <Form.Item
-          label="OTP"
-          rules={[{ required: true, message: "Please enter the OTP." }]}
-          extra={
-            <div className="flex justify-end mt-[10px]">
-              {canResendOtp ? (
-                <Button type="link" onClick={handleResendOtp} size="small">
-                  Resend OTP
-                </Button>
-              ) : (
-                <span>
-                  Resend OTP in{" "}
-                  <span className="!text-black">
-                    {parseOtpTime(otpTimeRemaining)}
-                  </span>
-                </span>
-              )}
-            </div>
-          }
-        >
-          <Input onChange={handleOtpChange} placeholder="Enter OTP" />
-        </Form.Item>
-
-        <Button
-          type="primary"
-          htmlType="submit"
-          block
-          loading={verifyingOtp}
+        Back
+      </Button>
+      <div className="text-center mb-2">
+        <Title level={4} className="text-center">
+          Enter verification code
+        </Title>
+        <Text className="text-gray-500">
+          We sent a code to <strong>{props.userEmail}</strong>
+        </Text>
+      </div>
+      <Form.Item>
+        <Input.OTP
+          length={6}
+          onChange={handleOtpChange}
           disabled={verifyingOtp}
-        >
-          Login
-        </Button>
-      </Form>
-    </div>
+          size="large"
+        />
+      </Form.Item>
+      {verifyingOtp && (
+        <span className="flex items-center gap-2 text-gray-500">
+          <LoadingOutlined spin /> Verifying...
+        </span>
+      )}
+      <div className="flex justify-center mt-2">
+        {canResendOtp ? (
+          <Button type="link" onClick={handleResendOtp} size="small">
+            Resend OTP
+          </Button>
+        ) : (
+          <Text type="secondary">
+            Resend OTP in{" "}
+            <span className="text-black">
+              {parseOtpTime(otpTimeRemaining)}
+            </span>
+          </Text>
+        )}
+      </div>
+    </Form>
   );
 };
 
