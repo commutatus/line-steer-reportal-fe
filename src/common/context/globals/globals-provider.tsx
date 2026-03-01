@@ -5,17 +5,11 @@ import useAuth from "./useAuth";
 import { notification } from "antd";
 import { AuthPageStates } from "@/modules/auth";
 import { NotificationInstance } from "antd/es/notification/interface";
+import useCurrentUser from "@/common/hooks/useCurrentUser";
 
 type GlobalsContextType = Partial<{
   auth: ReturnType<typeof useAuth>;
-  // TODO: Current user is static for now
-  currentUser: {
-    data: {
-      email: string;
-      firstname: string;
-      lastname: string;
-    };
-  };
+  currentUser: ReturnType<typeof useCurrentUser>;
   notificationApi: NotificationInstance;
   isSidebarCollapsed: boolean;
   toggleSidebarCollapse: () => void;
@@ -43,17 +37,9 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
     setAuthPageState?.(AuthPageStates.login);
   }, [setAuthPageState]);
 
-  // TODO: Current user is static for now
-  const currentUser = useMemo(
-    () => ({
-      data: {
-        email: "john.doe@example.com",
-        firstname: "John",
-        lastname: "Doe",
-      },
-    }),
-    [],
-  );
+  const currentUser = useCurrentUser({
+    authState: authContext.state,
+  });
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
