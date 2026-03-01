@@ -35,7 +35,7 @@ const Consumer = () => {
     {
       key: "2",
       label: "Table",
-      children: <TablePlan />,
+      children: <TablePlan onDayClick={handleDayClick} />,
     },
   ];
 

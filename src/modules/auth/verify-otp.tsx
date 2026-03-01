@@ -154,6 +154,7 @@ const VerifyOtp = (props: VerifyOtpProps) => {
           onChange={handleOtpChange}
           disabled={verifyingOtp}
           size="large"
+          inputMode="numeric"
         />
       </Form.Item>
       {verifyingOtp && (

@@ -71,6 +71,8 @@ const Login = (props: LoginProps) => {
           placeholder="you@example.com"
           size="large"
           className="rounded-lg"
+          inputMode="email"
+          type="email"
         />
       </Form.Item>
       <Form.Item className="mb-0 mt-6">

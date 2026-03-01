@@ -114,7 +114,8 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
           value={record[`q${q}` as keyof HourRow] as number | null}
           onChange={(value) => handleMwChange(record.key * 4 + q, value)}
           size="small"
-          style={{ width: "100%" }}
+          className="w-full"
+          inputMode="decimal"
         />
       ),
     })),
