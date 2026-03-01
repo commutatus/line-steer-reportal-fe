@@ -70,9 +70,9 @@ const TablePlan = (props: TablePlanProps) => {
   ];
 
   return (
-    <div className="rounded-xl border border-[#e2e8f0] shadow-sm bg-white">
-      <div className="p-4 border-b border-[#e2e8f0]">
-        <p className="text-[hsl(215.4_16.3%_46.9%)] text-sm">
+    <div className="rounded-xl border border-slate-200 shadow-sm bg-white">
+      <div className="p-4 border-b border-slate-200">
+        <p className="text-slate-500 text-sm">
           Click on any row to view or edit the daily plan
         </p>
       </div>

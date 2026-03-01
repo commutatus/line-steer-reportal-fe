@@ -49,8 +49,8 @@ const CalendarPlan = (props: CalendarPlanProps) => {
   };
 
   return (
-    <div className="rounded-xl border border-[#e2e8f0] shadow-sm bg-white">
-      <div className="p-4 border-b border-[#e2e8f0]">
+    <div className="rounded-xl border border-slate-200 shadow-sm bg-white">
+      <div className="p-4 border-b border-slate-200">
         <p className="text-muted-foreground text-sm">
           Click on any day to view or edit the daily plan
         </p>

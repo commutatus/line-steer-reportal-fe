@@ -7,19 +7,19 @@ export const fillConfig: Record<
   { color: string; label: string; bgClass: string; icon: IconDefinition }
 > = {
   empty: {
-    color: "#9ca3af", 
+    color: "var(--color-gray-400)", 
     label: "To Do", 
     bgClass: "bg-gray-200", 
     icon: faPlus,
   },
   in_progress: {
-    color: "#d97706",
+    color: "var(--color-amber-600)",
     label: "In Progress",
     bgClass: "bg-yellow-100",
     icon: faSpinner,
   },
   complete: {
-    color: "#16a34a",
+    color: "var(--color-green-600)",
     label: "Planned",
     bgClass: "bg-green-200",
     icon: faCheck,
