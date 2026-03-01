@@ -1,11 +1,12 @@
 import { Calendar } from "antd";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import { PlusOutlined, SyncOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
 import { TimeSlot } from "@/common/utils/data/types";
 import { getFillStatus, FillStatus } from "@/common/utils/data/mockData";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { fillConfig } from "./consumer-utils";
 
 const cx = classNames.bind(styles);
 
@@ -14,25 +15,6 @@ interface CalendarPlanProps {
   allPlanData: Record<string, Record<string, TimeSlot[]>>;
   onDayClick?: (date: string) => void;
 }
-
-const fillConfig: Record<
-  FillStatus,
-  { color: string; text: string; bgClass: string; icon: typeof PlusOutlined }
-> = {
-  empty: { color: "#9ca3af", text: "To Do", bgClass: "bg-gray-200", icon: PlusOutlined },
-  in_progress: {
-    color: "#d97706",
-    text: "In Progress",
-    bgClass: "bg-yellow-100",
-    icon: SyncOutlined,
-  },
-  complete: {
-    color: "#16a34a",
-    text: "Planned",
-    bgClass: "bg-green-200",
-    icon: CheckCircleOutlined,
-  },
-};
 
 const CalendarPlan = (props: CalendarPlanProps) => {
   const { plantId, allPlanData, onDayClick } = props;
@@ -49,10 +31,13 @@ const CalendarPlan = (props: CalendarPlanProps) => {
     if (!isCurrentMonth) return null;
 
     const config = fillConfig[status];
-    const Icon = config.icon;
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <Icon className="text-2xl" style={{ color: config.color }} />
+        <FontAwesomeIcon
+          icon={config.icon}
+          className="text-2xl"
+          style={{ color: config.color }}
+        />
       </div>
     );
   };
@@ -71,13 +56,15 @@ const CalendarPlan = (props: CalendarPlanProps) => {
         </p>
         <div className="flex gap-6 mt-3 flex-wrap">
           {Object.entries(fillConfig).map(([status, config]) => {
-            const Icon = config.icon;
             return (
               <div key={status} className="flex items-center gap-2">
-                <div className={`w-6 h-6 flex items-center justify-center ${config.bgClass}`}>
-                  <Icon style={{ color: config.color }} className="text-sm" />
+                <div className={cx("w-6 h-6 flex items-center justify-center", config.bgClass)}>
+                  <FontAwesomeIcon
+                    icon={config.icon}
+                    style={{ color: config.color }}
+                  />
                 </div>
-                <span className="text-muted-foreground text-sm">{config.text}</span>
+                <span className="text-muted-foreground text-sm">{config.label}</span>
               </div>
             );
           })}

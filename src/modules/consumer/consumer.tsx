@@ -6,12 +6,17 @@ import TablePlan from "./components/TablePlan";
 import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
 import { initializeMockData, savePlanData } from "@/common/utils/data/mockData";
+import { useQuery } from "@apollo/client";
+import { GET_LOAD_SCHEDULED_DAYS } from "./consumer.graphql";
 
 const Consumer = () => {
   // const [plants, setPlants] = useState<Plant[]>([]);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   // const [allPlans, setAllPlans] = useState<Record<string, DailyPlan[]>>({});
   const [allPlanData, setAllPlanData] = useState<Record<string, Record<string, TimeSlot[]>>>({});
+  const {} = useQuery(GET_LOAD_SCHEDULED_DAYS, {
+    
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);

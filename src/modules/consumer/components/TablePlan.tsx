@@ -1,23 +1,15 @@
 import dayjs from "dayjs";
 import { Table, Tag } from "antd";
-import { PlusOutlined, SyncOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { TimeSlot } from "@/common/utils/data/types";
 import { getFillStatus, calculateDayTotalMW, FillStatus } from "@/common/utils/data/mockData";
+import { fillConfig } from "./consumer-utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface TablePlanProps {
   plantId: string;
   allPlanData: Record<string, Record<string, TimeSlot[]>>;
   onDayClick?: (date: string) => void;
 }
-
-const fillStatusConfig: Record<
-  FillStatus,
-  { color: string; label: string; icon: React.ReactNode }
-> = {
-  empty: { color: "default", label: "To Do", icon: <PlusOutlined /> },
-  in_progress: { color: "warning", label: "In Progress", icon: <SyncOutlined /> },
-  complete: { color: "success", label: "Planned", icon: <CheckCircleOutlined /> },
-};
 
 const TablePlan = (props: TablePlanProps) => {
   const { plantId, allPlanData, onDayClick } = props;
@@ -58,10 +50,10 @@ const TablePlan = (props: TablePlanProps) => {
       dataIndex: "fillStatus",
       key: "fillStatus",
       render: (status: FillStatus) => {
-        const config = fillStatusConfig[status];
+        const config = fillConfig[status];
         return (
-          <Tag icon={config.icon} color={config.color}>
-            {config.label}
+          <Tag color={config.color}>
+            <FontAwesomeIcon icon={config.icon} /> {config.label}
           </Tag>
         );
       },
