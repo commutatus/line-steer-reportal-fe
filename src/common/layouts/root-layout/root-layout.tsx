@@ -29,7 +29,7 @@ const RootLayout: React.FC<Props> = ({
       </Head>
       {shouldShowSidebar && <Sidebar />}
       <Layout>
-        {shouldShowNavbar && <Navbar />}
+        {shouldShowNavbar && <Navbar pageTitle={pageTitle} />}
         <Content>{children}</Content>
       </Layout>
     </Layout>

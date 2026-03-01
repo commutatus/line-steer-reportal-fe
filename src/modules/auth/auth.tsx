@@ -13,7 +13,7 @@ import {
 import { REQUEST_OTP } from "@/common/graphql/auth";
 import Image from "next/image";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const AuthPage = () => {
   const { authPageState, showLogin, showVerifyOtp } = useGlobals();
@@ -34,14 +34,11 @@ const AuthPage = () => {
           <div className="text-center mb-10">
             <Image
               src="/assets/images/reportal-logo.png"
-              width={128}
-              height={128}
+              width={256}
+              height={256}
               alt="Logo"
-              className="mx-auto mb-4 w-32 object-contain"
+              className="mx-auto mb-4 w-64 object-contain"
             />
-            <Title level={2} className="!text-gray-900 !mb-2">
-              REPortal
-            </Title>
             <Text className="text-gray-500">
               An RE Management and Transaction Platform
             </Text>

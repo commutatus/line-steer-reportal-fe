@@ -1,0 +1,87 @@
+.consumerCalendarFullscreen {
+  background: transparent;
+
+  :global(.ant-picker-calendar-header) {
+    padding: 0 0 16px 0;
+  }
+
+  :global(.ant-picker-calendar-mode-switch) {
+    display: none;
+  }
+
+  :global(.ant-picker-panel) {
+    background: transparent;
+    border: none;
+  }
+
+  :global(.ant-picker-body) {
+    padding: 0;
+  }
+
+  :global(.ant-picker-content) {
+    height: auto;
+  }
+
+  :global(.ant-picker-content th) {
+    padding: 8px 0;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  :global(.ant-picker-cell) {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 2px;
+  }
+
+  :global(.ant-picker-cell .ant-picker-calendar-date) {
+    min-height: 100px;
+    border-radius: 0;
+    border: 1px solid hsl(214.3 31.8% 91.4%) !important;
+    background: hsl(0 0% 100%) !important;
+    transition: all 0.2s;
+    margin: 0 !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  :global(.ant-picker-cell:hover .ant-picker-calendar-date) {
+    border-color: hsl(222.2 47.4% 11.2%) !important;
+  }
+
+  :global(.ant-picker-cell-selected .ant-picker-calendar-date) {
+    border-color: hsl(222.2 47.4% 11.2%) !important;
+    border-width: 2px !important;
+  }
+
+  :global(.ant-picker-cell-selected:hover .ant-picker-calendar-date) {
+    border-color: hsl(222.2 47.4% 11.2%) !important;
+    border-width: 2px !important;
+  }
+
+  :global(.ant-picker-calendar-date-value) {
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+
+  :global(.ant-picker-cell-in-view .ant-picker-calendar-date-today) {
+    border-color: hsl(222.2 47.4% 11.2%) !important;
+  }
+
+  :global(.ant-picker-calendar-date-today .ant-picker-calendar-date-value) {
+    color: hsl(222.2 47.4% 11.2%) !important;
+  }
+
+  :global(.ant-picker-calendar-date-content) {
+    height: auto !important;
+    min-height: 60px;
+    padding: 0;
+    position: static;
+  }
+
+  :global(.ant-picker-cell:not(.ant-picker-cell-in-view) .ant-picker-calendar-date) {
+    opacity: 0.4 !important;
+  }
+}

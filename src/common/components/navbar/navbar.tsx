@@ -43,19 +43,22 @@ const ProfileDropdown = () => {
   );
 };
 
-const Navbar = () => {
+const Navbar = ({ pageTitle }: { pageTitle?: string }) => {
   const { toggleSidebarCollapse, isSidebarCollapsed } = useGlobals();
 
   return (
     <Header className="flex justify-between !leading-0 items-center sticky top-0 z-[1] !h-[40px] !px-[16px] !py-[8px] !bg-white border-solid border-0 border-b border-gray-3">
       <div className="inline-flex items-center gap-[8px]">
-        {isSidebarCollapsed && (
-          <Button
+        <div>
+          {isSidebarCollapsed && (
+            <Button
             type="text"
             onClick={() => toggleSidebarCollapse?.()}
             icon={<MenuOutlined className="!text-gray-6" />}
-          />
-        )}
+            />
+          )}
+        </div>
+        {pageTitle && <div className="inline-flex items-center gap-[8px]">{pageTitle}</div>}
       </div>
       <ProfileDropdown />
     </Header>
