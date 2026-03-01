@@ -477,6 +477,11 @@ export type RefreshAccessTokenMutationVariables = Exact<{
 
 export type RefreshAccessTokenMutation = { __typename?: 'Mutation', refreshAccessToken?: { __typename?: 'Token', accessToken?: string | null, refreshToken?: string | null } | null };
 
+export type GetParksQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetParksQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', createdAt: any, id: string, park?: { __typename?: 'Park', id: string, name?: string | null } | null }> } | null };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -495,3 +500,17 @@ export type GetLoadScheduleDaysQueryVariables = Exact<{
 
 
 export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', createdAt: any, date: any, id: string, updatedAt: any, status?: LoadScheduleDayStatusEnum | null, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null, createdAt: any, updatedAt: any }> | null }> } | null };
+
+export type GetDayWisePlanQueryQueryVariables = Exact<{
+  filters?: InputMaybe<LoadScheduleDayFilterInput>;
+}>;
+
+
+export type GetDayWisePlanQueryQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', createdAt: any, date: any, id: string, status?: LoadScheduleDayStatusEnum | null, totalLoad: number, updatedAt: any, park?: { __typename?: 'Park', id: string, name?: string | null } | null }> } | null };
+
+export type GetOverallPlanQueryVariables = Exact<{
+  filters?: InputMaybe<LoadScheduleDayFilterInput>;
+}>;
+
+
+export type GetOverallPlanQuery = { __typename?: 'Query', dailyLoadSummary?: { __typename?: 'DayLoadSummaryPage', data: Array<{ __typename?: 'DayLoadSummary', date: any, totalLoad: number, parkLoads: Array<{ __typename?: 'ParkLoadEntry', totalLoad: number, park: { __typename?: 'Park', id: string, name?: string | null } }> }> } | null };
