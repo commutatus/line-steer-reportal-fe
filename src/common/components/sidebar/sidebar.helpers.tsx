@@ -1,5 +1,6 @@
 export enum MenuKeys {
   PLANNING = "planning",
+  REQUESTS = "requests",
   REPORTS = "reports",
   DAY_WISE_PLAN = "day-wise-plan",
   OVERALL_PLAN = "overall-plan",
@@ -11,6 +12,7 @@ export const routeToMenuMap: {
 } = {
   "/": { selectedKey: MenuKeys.PLANNING },
   "/consumer": { selectedKey: MenuKeys.PLANNING },
+  "/generator": { selectedKey: MenuKeys.REQUESTS },
   "/consumer/reports": { selectedKey: MenuKeys.REPORTS },
   "/reports/day-wise-plan": {
     selectedKey: MenuKeys.DAY_WISE_PLAN,

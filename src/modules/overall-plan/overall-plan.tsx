@@ -4,8 +4,10 @@ import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useQuery } from '@apollo/client';
-import { GetOverallPlanQuery, GetOverallPlanQueryVariables } from '@/generated/graphql';
+import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from '@/generated/graphql';
 import { OVERALL_PLAN_QUERY } from '@/common/graphql/consumer.graphql';
+
+const presentDate = dayjs();
 
 interface TableRow {
   key: number;
@@ -15,7 +17,20 @@ interface TableRow {
 }
 
 const OverallPlan = () => {
-  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY);
+  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
+    variables: {
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
+      filters: {
+        dateRange: {
+          from: presentDate.startOf('month').toISOString(),
+          to: presentDate.endOf('month').toISOString(),
+        }
+      }
+    }
+  });
   const overallPlan = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
@@ -36,7 +51,7 @@ const OverallPlan = () => {
       const row: TableRow = {
         key: index,
         date: item.date,
-        total: item.totalLoad,
+        total: item.totalParkLoad,
       };
       
       item.parkLoads?.forEach((parkLoad) => {

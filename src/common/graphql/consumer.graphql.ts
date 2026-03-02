@@ -47,7 +47,6 @@ export const OVERALL_PLAN_QUERY = gql`
     loadSummary (filters: $filters, sort: $sort){
       data {
         date
-        totalLoad
         parkLoads {
           totalLoad
           park {
@@ -55,6 +54,8 @@ export const OVERALL_PLAN_QUERY = gql`
             name
           }
         }
+        totalFactoryLoad
+        totalParkLoad
       }
     }
   }

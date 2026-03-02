@@ -4,13 +4,28 @@ import { Checkbox } from "antd";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
-import { GetOverallPlanQuery, GetOverallPlanQueryVariables } from "@/generated/graphql";
+import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { OVERALL_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
+
+const presentDate = dayjs();
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const LoadGraph = () => {
-  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY);
+  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
+    variables: {
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
+      filters: {
+        dateRange: {
+          from: presentDate.subtract(7, 'day').toISOString(),
+          to: presentDate.toISOString(),
+        }
+      }
+    }
+  });
   const loadSummary = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
@@ -41,7 +56,7 @@ const LoadGraph = () => {
     return loadSummary.map((item) => {
       const dataPoint: Record<string, string | number> = {
         date: dayjs(item.date).format('MMM DD'),
-        total: item.totalLoad,
+        total: item.totalParkLoad,
       };
       
       item.parkLoads?.forEach((parkLoad) => {

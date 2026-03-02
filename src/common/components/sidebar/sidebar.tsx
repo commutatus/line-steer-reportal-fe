@@ -14,8 +14,10 @@ import {
   DoubleLeftOutlined,
   FileTextOutlined,
   LineChartOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import Image from "next/image";
+import { UserType } from "@/common/hooks/useCurrentUser";
 
 const cx = classNames.bind(styles);
 
@@ -65,7 +67,7 @@ const SideBarHeader = (sidebarProps: {
 };
 
 const Sidebar = () => {
-  const { isSidebarCollapsed, toggleSidebarCollapse } = useGlobals();
+  const { isSidebarCollapsed, toggleSidebarCollapse, currentUser } = useGlobals();
   const { isMobile } = useResponsive();
   const router = useRouter();
 
@@ -76,16 +78,27 @@ const Sidebar = () => {
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
     const planningHref = "/consumer";
+    const requestsHref = "/generator";
     const dayWisePlanHref = "/reports/day-wise-plan";
     const overallPlanHref = "/reports/overall-plan";
     const loadGraphHref = "/reports/load-graph";
 
+    let firstItem = {
+      key: MenuKeys.PLANNING,
+      label: <Link href={planningHref}>Planning</Link>,
+      icon: <CalendarOutlined />,
+    };
+
+    if (currentUser?.userType === UserType.GENERATOR) {
+      firstItem = {
+        key: MenuKeys.REQUESTS,
+        label: <Link href={requestsHref}>Requests</Link>,
+        icon: <UnorderedListOutlined />,
+      };
+    }
+
     return [
-      {
-        key: MenuKeys.PLANNING,
-        label: <Link href={planningHref}>Planning</Link>,
-        icon: <CalendarOutlined />,
-      },
+      firstItem,
       {
         key: MenuKeys.REPORTS,
         label: "Reports",
@@ -109,7 +122,7 @@ const Sidebar = () => {
         ],
       },
     ].filter((item) => item !== null);
-  }, []);
+  }, [currentUser?.userType]);
 
   useEffect(() => {
     const { selectedKey, openKey } = getMenuKeysFromPathname(router.pathname);
