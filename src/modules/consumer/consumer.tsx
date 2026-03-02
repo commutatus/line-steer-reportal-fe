@@ -56,7 +56,7 @@ const Consumer = () => {
 
     return loadScheduleDay.loadSchedules.map((schedule) => ({
       time: schedule.startTime || '',
-      mw: schedule.load || null,
+      mw: schedule.load ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 

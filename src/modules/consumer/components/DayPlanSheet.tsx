@@ -3,7 +3,8 @@ import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
 import { gql, useMutation } from "@apollo/client";
 import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
-import { GET_LOAD_SCHEDULED_DAYS } from "../../../common/graphql/consumer.graphql";
+import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
+import PlanConfirmModal from "./PlanConfirmModal";
 
 interface DayPlanSheetProps {
   date: string | null;
@@ -11,6 +12,7 @@ interface DayPlanSheetProps {
   onOpenChange: (open: boolean) => void;
   onSave: (date: string, timeSlots: TimeSlot[]) => void;
   initialData?: TimeSlot[];
+  yesterdayData?: TimeSlot[];
   loadScheduleIds?: string[];
   plantId: string;
 }
@@ -50,10 +52,11 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData, loadScheduleIds, plantId } = props;
+  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds, plantId } = props;
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
   );
+  const [showConfirm, setShowConfirm] = useState(false);
   const [bulkUpdateLoadSchedules, { 
     loading: bulkUpdateLoadSchedulesLoading,
   }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(
@@ -87,17 +90,25 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleContinue = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = async () => {
     if (!date || !loadScheduleIds || loadScheduleIds.length === 0) {
       message.error("Unable to save: missing schedule data");
       return;
     }
 
     try {
-      const loadSchedules = timeSlots.map((slot, index) => ({
-        id: loadScheduleIds[index],
-        load: slot.mw,
-      }));
+      const loadSchedules = timeSlots
+        .map((slot, index) => ({
+          id: loadScheduleIds[index],
+          load: slot.mw,
+          hasChanged: slot.mw !== (initialData?.[index]?.mw ?? null),
+        }))
+        .filter((entry) => entry.hasChanged)
+        .map(({ id, load }) => ({ id, load }));
 
       await bulkUpdateLoadSchedules({
         variables: {
@@ -109,6 +120,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
 
       message.success(`Saved plan for ${date}`);
       onSave(date, timeSlots);
+      setShowConfirm(false);
       onOpenChange(false);
     } catch {
       message.error("Failed to save plan. Please try again.");
@@ -173,37 +185,50 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
       ),
     })),
   ];
-
   return (
-    <Drawer
-      title={`Plan for ${formattedDate}`}
-      open={open}
-      onClose={() => onOpenChange(false)}
-      size={540}
-      footer={
-        <Space className="w-full justify-end">
-          <Button onClick={handleCancel} disabled={bulkUpdateLoadSchedulesLoading}>
-            Cancel
-          </Button>
-          <Button 
-            type="primary" 
-            onClick={handleSave}
-            loading={bulkUpdateLoadSchedulesLoading}
-          >
-            Save
-          </Button>
-        </Space>
-      }
-    >
-      <Table
-        dataSource={dataSource}
-        columns={columns}
-        pagination={false}
-        size="small"
-        bordered
-        scroll={{ y: "calc(100vh - 220px)" }}
-      />
-    </Drawer>
+    <>
+      <Drawer
+        title={`Plan for ${formattedDate}`}
+        open={open}
+        onClose={() => onOpenChange(false)}
+        size={540}
+        footer={
+          <Space className="w-full justify-end">
+            <Button onClick={handleCancel} disabled={bulkUpdateLoadSchedulesLoading}>
+              Cancel
+            </Button>
+            <Button 
+              type="primary" 
+              onClick={handleContinue}
+              disabled={bulkUpdateLoadSchedulesLoading}
+            >
+              Continue
+            </Button>
+          </Space>
+        }
+      >
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          pagination={false}
+          size="small"
+          bordered
+          scroll={{ y: "calc(100vh - 220px)" }}
+        />
+      </Drawer>
+
+      {date && (
+        <PlanConfirmModal
+          open={showConfirm}
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirm(false)}
+          date={date}
+          currentSlots={timeSlots}
+          previousSlots={initialData}
+          yesterdaySlots={yesterdayData}
+        />
+      )}
+    </>
   );
 };
 
