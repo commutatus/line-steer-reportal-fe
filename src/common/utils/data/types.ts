@@ -8,6 +8,7 @@ export interface Plant {
 export interface TimeSlot {
   time: string; // HH:mm format
   mw: number | null;
+  deviation: number | null;
 }
 
 export interface DailyPlan {

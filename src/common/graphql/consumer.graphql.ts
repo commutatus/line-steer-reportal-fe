@@ -17,6 +17,10 @@ LoadScheduleDaySortInput) {
           startTime
           endTime
           load
+          factory {
+            id
+            thresholdPercentage
+          }
         }
         factory {
           id

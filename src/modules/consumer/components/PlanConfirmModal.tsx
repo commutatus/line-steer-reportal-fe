@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { Modal, Table, Tag } from "antd";
 import ReactECharts from "echarts-for-react";
-import dayjs from "dayjs";
 import { TimeSlot } from "@/common/utils/data/types";
+import { convertToUTCHoursFormat } from "@/common/utils/helpers";
 
 interface PlanConfirmModalProps {
   open: boolean;
@@ -11,7 +11,7 @@ interface PlanConfirmModalProps {
   date: string;
   currentSlots: TimeSlot[];
   previousSlots?: TimeSlot[];
-  yesterdaySlots?: TimeSlot[];
+  yesterdaySlots?: TimeSlot[]; // TODO: Remove yesterdaySlots
 }
 
 interface ChangeRow {
@@ -50,7 +50,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       if (oldVal !== newVal) {
         rows.push({
           key: String(i),
-          time: slot.time,
+          time: convertToUTCHoursFormat(slot.time),
           oldValue: oldVal,
           newValue: newVal,
           yesterdayValue: yVal,
@@ -123,11 +123,15 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       dataIndex: "yesterdayValue",
       key: "yesterdayValue",
       width: 120,
-      render: (v: number | null) => {
-        if (v === null) {
+      render: (v: number | null, record: ChangeRow) => {
+        if (record?.oldValue === null || record?.newValue === null) {
           return <Tag>N/A</Tag>;
         }
-        return <span className="text-gray-500">{v.toFixed(2)}</span>;
+        return (
+          <span className="text-gray-500">
+            {(record?.oldValue + record?.newValue) / 2}
+          </span>
+        );
       },
     },
     {
@@ -157,7 +161,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
   ];
 
   const chartOption = useMemo(() => {
-    const times = currentSlots.map((s) => dayjs(s.time).format("HH:mm"));
+    const times = currentSlots.map((s) => convertToUTCHoursFormat(s.time));
     const todayValues = currentSlots.map((s) => s.mw ?? 0);
     const yesterdayValues = yesterdaySlots
       ? yesterdaySlots.map((s) => s.mw ?? 0)

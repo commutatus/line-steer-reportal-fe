@@ -5,6 +5,7 @@ import { LoadSchedule } from "@/modules/generator/generator.types";
 import { fillConfig } from "@/modules/consumer/consumer-utils";
 import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { convertToUTCHoursFormat } from "@/common/utils/helpers";
 
 interface RequestDetailsSheetProps {
   request: LoadSchedule | null;
@@ -31,7 +32,7 @@ const RequestDetailsSheet: React.FC<RequestDetailsSheetProps> = ({
       width: 100,
       render: (time: string) => (
         <span className="font-mono text-sm">
-          {dayjs(time).format("HH:mm")}
+          {convertToUTCHoursFormat(time)}
         </span>
       ),
     },

@@ -60,7 +60,7 @@ const generateTimeSlots = (baseLoad: number, peakHours: number[] = [9, 10, 11, 1
         mw = randomMW(baseLoad * 0.5, baseLoad * 0.7);
       }
       
-      slots.push({ time, mw });
+      slots.push({ time, mw, deviation: null });
     }
   }
   return slots;
