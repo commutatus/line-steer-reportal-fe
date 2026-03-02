@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { Table, Tag } from "antd";
-import { fillConfig } from "./consumer-utils";
+import { fillConfig } from "@/modules/consumer/consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadScheduleDay } from "../consumer.types";
 import { LoadScheduleDayStatusEnum } from "@/generated/graphql";

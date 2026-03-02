@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import RootLayout from "@/common/layouts/root-layout";
 import { Table, Select, Tag } from "antd";
 import { GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables, LoadScheduleDaySortColumn, LoadScheduleDayStatusEnum, SortDirection } from "@/generated/graphql";
-import { fillConfig } from "../consumer/components/consumer-utils";
+import { fillConfig } from "../consumer/consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";

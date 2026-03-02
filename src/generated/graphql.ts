@@ -490,7 +490,7 @@ export type GetLoadScheduleDaysQueryVariables = Exact<{
 }>;
 
 
-export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null }> | null }> } | null };
+export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null, totalLoad: number, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null }> | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null }> } | null };
 
 export type GetDayWisePlanQueryQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
@@ -519,3 +519,8 @@ export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
 
 
 export type BulkUpdateLoadSchedulesMutation = { __typename?: 'Mutation', bulkUpdateLoadSchedules?: Array<{ __typename?: 'LoadSchedule', createdAt: any, endTime?: any | null, id: string, load?: number | null, pastAverageLoad?: number | null, startTime?: any | null, updatedAt: any }> | null };
+
+export type GetFactoriesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetFactoriesQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', id: string, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null }> } | null };

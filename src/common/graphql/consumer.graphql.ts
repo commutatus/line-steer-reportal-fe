@@ -11,11 +11,21 @@ LoadScheduleDaySortInput) {
         date
         id
         status
+        totalLoad
         loadSchedules {
           id
           startTime
           endTime
           load
+        }
+        factory {
+          id
+          name
+        }
+        park {
+          id
+          name
+          city
         }
       }
     }

@@ -45,7 +45,7 @@ const ProfileDropdown = () => {
   );
 };
 
-const Navbar = ({ pageTitle }: { pageTitle?: string }) => {
+const Navbar = ({ pageTitle, pageDescription }: { pageTitle?: string; pageDescription?: string }) => {
   const { toggleSidebarCollapse, isSidebarCollapsed } = useGlobals();
   const router = useRouter();
   const isConsumerPage = router.pathname === "/consumer";
@@ -56,13 +56,20 @@ const Navbar = ({ pageTitle }: { pageTitle?: string }) => {
         <div>
           {isSidebarCollapsed && (
             <Button
-            type="text"
-            onClick={() => toggleSidebarCollapse?.()}
-            icon={<MenuOutlined className="!text-gray-6" />}
+              type="text"
+              onClick={() => toggleSidebarCollapse?.()}
+              icon={<MenuOutlined className="!text-gray-6" />}
             />
           )}
         </div>
-        {pageTitle && <div className="inline-flex items-center gap-[8px]">{pageTitle}</div>}
+        {(pageTitle || pageDescription) && (
+          <div>
+            <h6 className="mb-3! font-semibold">
+              {pageTitle}
+            </h6>
+            {pageDescription && <p className="text-sm text-gray-500">{pageDescription}</p>}
+          </div>
+        )}
       </div>
       <div className="inline-flex items-center gap-[8px]">
         {isConsumerPage && <PlantSelector />}

@@ -4,8 +4,8 @@ import dayjs from "dayjs";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { fillConfig } from "./consumer-utils";
-import { LoadScheduleDay } from "../consumer.types";
+import { fillConfig } from "@/modules/consumer/consumer-utils";
+import { LoadScheduleDay } from "@/modules/consumer/consumer.types";
 import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 const cx = classNames.bind(styles);
