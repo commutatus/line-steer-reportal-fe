@@ -12,15 +12,15 @@ export const routeToMenuMap: {
   "/": { selectedKey: MenuKeys.PLANNING },
   "/consumer": { selectedKey: MenuKeys.PLANNING },
   "/consumer/reports": { selectedKey: MenuKeys.REPORTS },
-  "/consumer/reports/day-wise-plan": {
+  "/reports/day-wise-plan": {
     selectedKey: MenuKeys.DAY_WISE_PLAN,
     openKey: MenuKeys.REPORTS,
   },
-  "/consumer/reports/overall-plan": {
+  "/reports/overall-plan": {
     selectedKey: MenuKeys.OVERALL_PLAN,
     openKey: MenuKeys.REPORTS,
   },
-  "/consumer/reports/load-graph": {
+  "/reports/load-graph": {
     selectedKey: MenuKeys.LOAD_GRAPH,
     openKey: MenuKeys.REPORTS,
   },
