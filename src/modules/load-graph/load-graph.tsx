@@ -11,7 +11,7 @@ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#e
 
 const LoadGraph = () => {
   const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY);
-  const loadSummary = useMemo(() => data?.dailyLoadSummary?.data ?? [], [data]);
+  const loadSummary = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
     if (!loadSummary.length) return [];

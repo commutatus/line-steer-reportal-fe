@@ -16,7 +16,7 @@ interface TableRow {
 
 const OverallPlan = () => {
   const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY);
-  const overallPlan = useMemo(() => data?.dailyLoadSummary?.data ?? [], [data]);
+  const overallPlan = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
     if (!overallPlan.length) return [];

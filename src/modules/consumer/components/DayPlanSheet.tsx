@@ -96,7 +96,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
     try {
       const loadSchedules = timeSlots.map((slot, index) => ({
         id: loadScheduleIds[index],
-        load: slot.mw || 0,
+        load: slot.mw,
       }));
 
       await bulkUpdateLoadSchedules({

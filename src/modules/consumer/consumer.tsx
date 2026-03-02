@@ -7,8 +7,11 @@ import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
-import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables } from "@/generated/graphql";
+import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { useRouter } from "next/router";
+import dayjs from "dayjs";
+
+const currentDate = dayjs();
 
 const Consumer = () => {
   const router = useRouter();
@@ -18,7 +21,16 @@ const Consumer = () => {
     variables: {
       filters: {
         parkIds: [plantId],
-      }
+        dateRange: {
+          // TODO: Handle Date Range based on the calendar view.
+          from: currentDate.startOf("month").toISOString(),
+          to: currentDate.endOf("month").toISOString(),
+        }
+      },
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
     },
     skip: !plantId,
   });
