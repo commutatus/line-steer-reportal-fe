@@ -1,17 +1,32 @@
 import { useState, useMemo } from "react";
 import RootLayout from "@/common/layouts/root-layout";
 import { Table, Select, Tag } from "antd";
-import { GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables, LoadScheduleDayStatusEnum } from "@/generated/graphql";
+import { GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables, LoadScheduleDaySortColumn, LoadScheduleDayStatusEnum, SortDirection } from "@/generated/graphql";
 import { fillConfig } from "../consumer/components/consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 
+const presentDate = dayjs();
+
 const DayWisePlan = () => {
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");
 
-  const { data } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY);
+  const { data } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY, {
+    variables: {
+      filters: {
+        dateRange: {
+          from: presentDate.startOf("month").toISOString(),
+          to: presentDate.endOf("month").toISOString(),
+        }
+      },
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
+    }
+  });
 
   const dayWisePlan = useMemo(() => data?.loadScheduleDays?.data ?? [], [data]);
 

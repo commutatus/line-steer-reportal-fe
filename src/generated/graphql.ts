@@ -493,6 +493,7 @@ export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?
 
 export type GetDayWisePlanQueryQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
+  sort?: InputMaybe<LoadScheduleDaySortInput>;
 }>;
 
 

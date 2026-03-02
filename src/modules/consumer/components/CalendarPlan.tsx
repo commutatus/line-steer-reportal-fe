@@ -14,10 +14,12 @@ interface CalendarPlanProps {
   plantId: string;
   loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
+  currentDate: dayjs.Dayjs;
+  onDateChange?: (date: dayjs.Dayjs) => void;
 }
 
 const CalendarPlan = (props: CalendarPlanProps) => {
-  const { loadScheduledDays, onDayClick } = props;
+  const { loadScheduledDays, onDayClick, currentDate, onDateChange } = props;
 
   const getStatusForDate = (date: Dayjs): LoadScheduleDayStatusEnum => {
     const dateStr = date.format("YYYY-MM-DD");
@@ -88,6 +90,8 @@ const CalendarPlan = (props: CalendarPlanProps) => {
           }}
           onSelect={handleSelect}
           className={cx("consumerCalendarFullscreen")}
+          value={currentDate}
+          onChange={onDateChange}
         />
       </div>
     </div>

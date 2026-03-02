@@ -11,18 +11,18 @@ import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadSchedu
 import { useRouter } from "next/router";
 import dayjs from "dayjs";
 
-const currentDate = dayjs();
+const presentDate = dayjs();
 
 const Consumer = () => {
   const router = useRouter();
   const plantId = (router.query.plantId as string) || "1";
+  const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
         parkIds: [plantId],
         dateRange: {
-          // TODO: Handle Date Range based on the calendar view.
           from: currentDate.startOf("month").toISOString(),
           to: currentDate.endOf("month").toISOString(),
         }
@@ -67,6 +67,10 @@ const Consumer = () => {
     return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
   }, [selectedDate, loadScheduledDays]);
 
+  const handleDateChange = (date: dayjs.Dayjs) => {
+    setCurrentDate(date);
+  };
+
   if (loadScheduledDaysLoading) {
     return (
       <RootLayout pageTitle="Consumer">
@@ -86,6 +90,8 @@ const Consumer = () => {
           plantId={plantId}
           loadScheduledDays={loadScheduledDays}
           onDayClick={handleDayClick}
+          currentDate={currentDate}
+          onDateChange={handleDateChange}
         />
       ),
     },

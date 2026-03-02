@@ -3,7 +3,10 @@ import { gql } from "@apollo/client";
 export const GET_LOAD_SCHEDULED_DAYS = gql`
   query GetLoadScheduleDays($filters: LoadScheduleDayFilterInput, $sort: 
 LoadScheduleDaySortInput) {
-    loadScheduleDays(filters: $filters, sort: $sort) {
+    loadScheduleDays(filters: $filters, sort: $sort, pagination: {
+      perPage: 31,
+      pageNo: 1,
+    }) {
       data {
         date
         id
@@ -20,8 +23,11 @@ LoadScheduleDaySortInput) {
 `;
 
 export const DAY_WISE_PLAN_QUERY = gql`
-  query GetDayWisePlanQuery($filters: LoadScheduleDayFilterInput) {
-    loadScheduleDays (filters: $filters) {
+  query GetDayWisePlanQuery($filters: LoadScheduleDayFilterInput, $sort: LoadScheduleDaySortInput) {
+    loadScheduleDays (filters: $filters, sort: $sort, pagination: {
+      perPage: 31,
+      pageNo: 1,
+    }) {
         data {
           date
           id
