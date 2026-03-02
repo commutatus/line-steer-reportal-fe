@@ -1,11 +1,13 @@
 import RootLayout from "@/common/layouts/root-layout";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Checkbox } from "antd";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { OVERALL_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
+import { useGlobals } from "@/common/context/globals";
+import { UserType } from "@/common/hooks/useCurrentUser";
 
 const presentDate = dayjs();
 
@@ -26,6 +28,8 @@ const LoadGraph = () => {
       }
     }
   });
+  const { currentUser } = useGlobals();
+  const { userType } = currentUser ?? {};
   const loadSummary = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
@@ -41,37 +45,65 @@ const LoadGraph = () => {
     return Array.from(parkMap, ([id, name]) => ({ id, name }));
   }, [loadSummary]);
 
+  const availableFactories = useMemo(() => {
+    if (!loadSummary.length) return [];
+    const factoryMap = new Map();
+    loadSummary.forEach((day) => {
+      day.factoryLoads?.forEach((factoryLoad) => {
+        if (factoryLoad.factory?.id && factoryLoad.factory?.name) {
+          factoryMap.set(factoryLoad.factory.id, factoryLoad.factory.name);
+        }
+      });
+    });
+    return Array.from(factoryMap, ([id, name]) => ({ id, name }));
+  }, [loadSummary]);
+
   const [visibleParks, setVisibleParks] = useState<Record<string, boolean>>({});
   const [showTotal, setShowTotal] = useState(true);
 
-  useMemo(() => {
+  useEffect(() => {
     const initialVisibility: Record<string, boolean> = {};
-    availableParks.forEach((park) => {
-      initialVisibility[park.id] = true;
-    });
+    if (userType === UserType.CONSUMER) {
+      availableParks.forEach((park) => {
+        initialVisibility[park.id] = true;
+      });
+    } else {
+      availableFactories.forEach((factory) => {
+        initialVisibility[factory.id] = true;
+      });
+    }
     setVisibleParks(initialVisibility);
-  }, [availableParks]);
+  }, [availableParks, availableFactories, userType]);
 
   const chartData = useMemo(() => {
     return loadSummary.map((item) => {
       const dataPoint: Record<string, string | number> = {
         date: dayjs(item.date).format('MMM DD'),
-        total: item.totalParkLoad,
+        total: userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
       };
       
-      item.parkLoads?.forEach((parkLoad) => {
-        if (parkLoad.park?.id) {
-          dataPoint[`park_${parkLoad.park.id}`] = parkLoad.totalLoad;
-        }
-      });
-      
+      if (userType === UserType.CONSUMER) {
+        item.parkLoads?.forEach((parkLoad) => {
+          if (parkLoad.park?.id) {
+            dataPoint[`park_${parkLoad.park.id}`] = parkLoad.totalLoad;
+          }
+        });
+      } else {
+        item.factoryLoads?.forEach((factoryLoad) => {
+          if (factoryLoad.factory?.id) {
+            dataPoint[`factory_${factoryLoad.factory.id}`] = factoryLoad.totalLoad;
+          }
+        });
+      }
       return dataPoint;
     });
-  }, [loadSummary]);
+  }, [loadSummary, userType]);
 
   const handleParkToggle = (parkId: string, checked: boolean) => {
     setVisibleParks((prev) => ({ ...prev, [parkId]: checked }));
   };
+
+  const plants = userType === UserType.CONSUMER ? availableParks : availableFactories;
 
   return (
     <RootLayout pageTitle="Load Graph">
@@ -82,17 +114,17 @@ const LoadGraph = () => {
             
             <div className="flex items-center gap-6 flex-wrap">
               <span className="text-sm font-medium text-slate-700">Show Plants:</span>
-              {availableParks.map((park, index) => (
+              {plants.map((plant, index) => (
                 <Checkbox
-                  key={park.id}
-                  checked={visibleParks[park.id] ?? true}
-                  onChange={(e) => handleParkToggle(park.id, e.target.checked)}
+                  key={plant.id}
+                  checked={visibleParks[plant.id] ?? true}
+                  onChange={(e) => handleParkToggle(plant.id, e.target.checked)}
                 >
                   <span 
                     className="font-medium" 
                     style={{ color: CHART_COLORS[index % CHART_COLORS.length] }}
                   >
-                    {park.name}
+                    {plant.name}
                   </span>
                 </Checkbox>
               ))}
@@ -131,16 +163,16 @@ const LoadGraph = () => {
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"
                 />
-                {availableParks.map((park, index) => {
+                {plants.map((plant, index) => {
                   const color = CHART_COLORS[index % CHART_COLORS.length];
-                  return visibleParks[park.id] ? (
+                  return visibleParks[plant.id] ? (
                     <Line 
-                      key={park.id}
+                      key={plant.id}
                       type="monotone" 
-                      dataKey={`park_${park.id}`}
+                      dataKey={userType === UserType.CONSUMER ? `park_${plant.id}` : `factory_${plant.id}`}
                       stroke={color}
                       strokeWidth={2}
-                      name={park.name}
+                      name={plant.name}
                       dot={{ fill: color, r: 4 }}
                       activeDot={{ r: 6 }}
                     />

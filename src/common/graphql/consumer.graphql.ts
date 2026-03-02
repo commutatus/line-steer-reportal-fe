@@ -37,6 +37,10 @@ export const DAY_WISE_PLAN_QUERY = gql`
             id
             name
           }
+          factory {
+            id
+            name
+          }
       }
     }
   }
@@ -50,6 +54,13 @@ export const OVERALL_PLAN_QUERY = gql`
         parkLoads {
           totalLoad
           park {
+            id
+            name
+          }
+        }
+        factoryLoads {
+          totalLoad
+          factory {
             id
             name
           }

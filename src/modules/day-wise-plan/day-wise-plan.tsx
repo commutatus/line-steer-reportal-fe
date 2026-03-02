@@ -7,10 +7,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
+import { useGlobals } from "@/common/context/globals";
+import { UserType } from "@/common/hooks/useCurrentUser";
 
 const presentDate = dayjs();
 
 const DayWisePlan = () => {
+  const { currentUser } = useGlobals();
+  const { userType } = currentUser ?? {};
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");
 
   const { data } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY, {
@@ -38,14 +42,15 @@ const DayWisePlan = () => {
   }, [dayWisePlan, statusFilter]);
 
   const tableData = useMemo(() => {
+    const isConsumerUser = userType === UserType.CONSUMER;
     return filteredData.map((item, index) => ({
       key: index,
       date: item.date,
-      plant: item.park?.name,
+      plant: isConsumerUser ? item.park?.name : item.factory?.name,
       totalLoad: item.totalLoad,
       status: item.status,
     }));
-  }, [filteredData]);
+  }, [filteredData, userType]);
 
   const columns = [
     {

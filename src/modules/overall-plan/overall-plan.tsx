@@ -6,6 +6,8 @@ import dayjs from 'dayjs';
 import { useQuery } from '@apollo/client';
 import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from '@/generated/graphql';
 import { OVERALL_PLAN_QUERY } from '@/common/graphql/consumer.graphql';
+import { useGlobals } from '@/common/context/globals';
+import { UserType } from '@/common/hooks/useCurrentUser';
 
 const presentDate = dayjs();
 
@@ -31,6 +33,9 @@ const OverallPlan = () => {
       }
     }
   });
+
+  const { currentUser } = useGlobals();
+  const { userType } = currentUser ?? {};
   const overallPlan = useMemo(() => data?.loadSummary?.data ?? [], [data]);
 
   const availableParks = useMemo(() => {
@@ -46,23 +51,43 @@ const OverallPlan = () => {
     return Array.from(parkMap, ([id, name]) => ({ id, name }));
   }, [overallPlan]);
 
+  const availableFactories = useMemo(() => {
+    if (!overallPlan.length) return [];
+    const factoryMap = new Map();
+    overallPlan.forEach((day) => {
+      day.factoryLoads?.forEach((factoryLoad) => {
+        if (factoryLoad.factory?.id && factoryLoad.factory?.name) {
+          factoryMap.set(factoryLoad.factory.id, factoryLoad.factory.name);
+        }
+      });
+    });
+    return Array.from(factoryMap, ([id, name]) => ({ id, name }));
+  }, [overallPlan]);
+
   const tableData = useMemo(() => {
     return overallPlan.map((item, index) => {
       const row: TableRow = {
         key: index,
         date: item.date,
-        total: item.totalParkLoad,
+        total: userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
       };
-      
-      item.parkLoads?.forEach((parkLoad) => {
-        if (parkLoad.park?.id) {
-          row[`park_${parkLoad.park.id}`] = parkLoad.totalLoad;
-        }
-      });
-      
+
+      if (userType === UserType.CONSUMER) {
+        item.parkLoads?.forEach((parkLoad) => {
+          if (parkLoad.park?.id) {
+            row[`park_${parkLoad.park.id}`] = parkLoad.totalLoad;
+          }
+        });
+      } else {
+        item.factoryLoads?.forEach((factoryLoad) => {
+          if (factoryLoad.factory?.id) {
+            row[`factory_${factoryLoad.factory.id}`] = factoryLoad.totalLoad;
+          }
+        });
+      }
       return row;
     });
-  }, [overallPlan]);
+  }, [overallPlan, userType]);
 
   const columns: ColumnsType<TableRow> = useMemo(() => {
     const cols: ColumnsType<TableRow> = [
@@ -74,15 +99,27 @@ const OverallPlan = () => {
       },
     ];
 
-    availableParks.forEach((park) => {
-      cols.push({
-        title: park.name,
-        dataIndex: `park_${park.id}`,
-        key: `park_${park.id}`,
-        align: 'right',
-        render: (val: number | undefined) => val?.toFixed(2) ?? '0.00',
+    if (userType === UserType.CONSUMER) {
+      availableParks.forEach((park) => {
+        cols.push({
+          title: park.name,
+          dataIndex: `park_${park.id}`,
+          key: `park_${park.id}`,
+          align: 'right',
+          render: (val: number | undefined) => val?.toFixed(2) ?? '0.00',
+        });
       });
-    });
+    } else {
+      availableFactories.forEach((factory) => {
+        cols.push({
+          title: factory.name,
+          dataIndex: `factory_${factory.id}`,
+          key: `factory_${factory.id}`,
+          align: 'right',
+          render: (val: number | undefined) => val?.toFixed(2) ?? '0.00',
+        });
+      });
+    }
 
     cols.push({
       title: 'Total',
@@ -93,7 +130,7 @@ const OverallPlan = () => {
     });
 
     return cols;
-  }, [availableParks]);
+  }, [availableParks, availableFactories, userType]);
 
   return (
     <RootLayout pageTitle="Overall Plan">
