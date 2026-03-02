@@ -477,22 +477,10 @@ export type RefreshAccessTokenMutationVariables = Exact<{
 
 export type RefreshAccessTokenMutation = { __typename?: 'Mutation', refreshAccessToken?: { __typename?: 'Token', accessToken?: string | null, refreshToken?: string | null } | null };
 
-export type GetParksQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetContractsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetParksQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', createdAt: any, id: string, park?: { __typename?: 'Park', id: string, name?: string | null } | null }> } | null };
-
-export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', email: string, firstName?: string | null, fullName?: string | null, id: string, lastName?: string | null, consumer?: { __typename?: 'Consumer', createdAt: any, id: string, name?: string | null } | null, generator?: { __typename?: 'Generator', createdAt: any, id: string, name?: string | null } | null } | null };
-
-export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
-  input: BulkUpdateInput;
-}>;
-
-
-export type BulkUpdateLoadSchedulesMutation = { __typename?: 'Mutation', bulkUpdateLoadSchedules?: Array<{ __typename?: 'LoadSchedule', createdAt: any, endTime?: any | null, id: string, load?: number | null, pastAverageLoad?: number | null, startTime?: any | null, updatedAt: any }> | null };
+export type GetContractsQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', createdAt: any, id: string, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null }> } | null };
 
 export type GetLoadScheduleDaysQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
@@ -514,3 +502,15 @@ export type GetOverallPlanQueryVariables = Exact<{
 
 
 export type GetOverallPlanQuery = { __typename?: 'Query', dailyLoadSummary?: { __typename?: 'DayLoadSummaryPage', data: Array<{ __typename?: 'DayLoadSummary', date: any, totalLoad: number, parkLoads: Array<{ __typename?: 'ParkLoadEntry', totalLoad: number, park: { __typename?: 'Park', id: string, name?: string | null } }> }> } | null };
+
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', email: string, firstName?: string | null, fullName?: string | null, id: string, lastName?: string | null, consumer?: { __typename?: 'Consumer', createdAt: any, id: string, name?: string | null } | null, generator?: { __typename?: 'Generator', createdAt: any, id: string, name?: string | null } | null } | null };
+
+export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
+  input: BulkUpdateInput;
+}>;
+
+
+export type BulkUpdateLoadSchedulesMutation = { __typename?: 'Mutation', bulkUpdateLoadSchedules?: Array<{ __typename?: 'LoadSchedule', createdAt: any, endTime?: any | null, id: string, load?: number | null, pastAverageLoad?: number | null, startTime?: any | null, updatedAt: any }> | null };

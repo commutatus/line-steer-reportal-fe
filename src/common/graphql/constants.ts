@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
-export const GET_PARKS = gql`
-  query GetParks {
+export const GET_CONTRACTS = gql`
+  query GetContracts {
     contracts {
       data {
         createdAt
@@ -9,6 +9,7 @@ export const GET_PARKS = gql`
         park {
           id
           name
+          city
         }
       }
     }
