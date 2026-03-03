@@ -47,9 +47,14 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
     setIsSidebarCollapsed((prev) => !prev);
   };
 
+  const handleLogout = useCallback(() => {
+    authContext.logout();
+    setAuthPageState?.(AuthPageStates.login);
+  }, [authContext, setAuthPageState]);
+
   const contextValue = useMemo(() => {
     return {
-      auth: authContext,
+      auth: { ...authContext, logout: handleLogout },
       notificationApi,
       currentUser,
       isSidebarCollapsed,
@@ -59,7 +64,7 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
       showLogin,
       showVerifyOtp,
     };
-  }, [authContext, notificationApi, currentUser, isSidebarCollapsed, authPageState, setAuthPageState, showLogin, showVerifyOtp]);
+  }, [authContext, notificationApi, currentUser, isSidebarCollapsed, authPageState, setAuthPageState, showLogin, showVerifyOtp, handleLogout]);
 
   return (
     <GlobalsContext.Provider value={contextValue}>

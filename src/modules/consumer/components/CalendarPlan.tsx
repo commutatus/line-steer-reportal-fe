@@ -16,10 +16,11 @@ interface CalendarPlanProps {
   onDayClick?: (date: string) => void;
   currentDate: dayjs.Dayjs;
   onDateChange?: (date: dayjs.Dayjs) => void;
+  description?: string;
 }
 
 const CalendarPlan = (props: CalendarPlanProps) => {
-  const { loadScheduledDays, onDayClick, currentDate, onDateChange } = props;
+  const { loadScheduledDays, onDayClick, currentDate, onDateChange, description } = props;
 
   const getStatusForDate = (date: Dayjs): LoadScheduleDayStatusEnum => {
     const dateStr = date.format("YYYY-MM-DD");
@@ -54,7 +55,7 @@ const CalendarPlan = (props: CalendarPlanProps) => {
     <div className="rounded-xl border border-slate-200 shadow-sm bg-white">
       <div className="p-4 border-b border-slate-200">
         <p className="text-muted-foreground text-sm">
-          Click on any day to view or edit the daily plan
+          {description}
         </p>
         <div className="flex gap-6 mt-3 flex-wrap">
           {Object.entries(fillConfig).map(([status, config]) => {

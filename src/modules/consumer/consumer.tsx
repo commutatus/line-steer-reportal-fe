@@ -105,6 +105,7 @@ const Consumer = () => {
           onDayClick={handleDayClick}
           currentDate={currentDate}
           onDateChange={handleDateChange}
+          description="Click on any day to view or edit the daily plan"
         />
       ),
     },

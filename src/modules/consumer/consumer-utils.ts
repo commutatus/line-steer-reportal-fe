@@ -8,7 +8,7 @@ export const fillConfig: Record<
 > = {
   [LoadScheduleDayStatusEnum.Pending]: {
     color: "var(--color-gray-400)", 
-    label: "To Do", 
+    label: "Pending", 
     bgClass: "bg-gray-200", 
     icon: faPlus,
   },
