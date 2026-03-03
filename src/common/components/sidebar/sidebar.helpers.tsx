@@ -13,7 +13,7 @@ export const routeToMenuMap: {
   "/": { selectedKey: MenuKeys.PLANNING },
   "/consumer": { selectedKey: MenuKeys.PLANNING },
   "/generator": { selectedKey: MenuKeys.REQUESTS },
-  "/consumer/reports": { selectedKey: MenuKeys.REPORTS },
+  "/reports": { selectedKey: MenuKeys.REPORTS },
   "/reports/day-wise-plan": {
     selectedKey: MenuKeys.DAY_WISE_PLAN,
     openKey: MenuKeys.REPORTS,
