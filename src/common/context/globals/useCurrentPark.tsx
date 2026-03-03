@@ -1,7 +1,7 @@
 import { GET_CONTRACTS } from "@/common/graphql/constants";
 import { GetContractsQuery, GetContractsQueryVariables } from "@/generated/graphql";
 import { useQuery } from "@apollo/client";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface SelectedPark {
   id: string;
@@ -41,6 +41,12 @@ const useCurrentPark = () => {
     },
     [parks]
   );
+
+  useEffect(() => {
+    if (!selectedPark && parks.length > 0) {
+      setSelectedPark(parks[0]);
+    }
+  }, [parks, selectedPark]);
 
   const parkId = selectedPark?.id ?? null;
   const contractId = selectedPark?.contractId ?? null;

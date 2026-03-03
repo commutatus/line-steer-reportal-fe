@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Empty, Spin, Tabs, message } from "antd";
+import { Spin, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import DayPlanSheet from "./components/DayPlanSheet";
@@ -10,7 +10,6 @@ import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadSchedu
 import dayjs from "dayjs";
 import { useGlobals } from "@/common/context/globals";
 import ParkSelector from "@/common/components/park-selector";
-import { FilterOutlined } from "@ant-design/icons";
 
 const presentDate = dayjs();
 
@@ -124,29 +123,7 @@ const Consumer = () => {
   return (
     <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
       <div className="p-6">
-        {!parkId ? (
-          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-            <Empty
-              image={
-                <FilterOutlined
-                  className="text-gray-300! text-[64px]"
-                />
-              }
-              description={
-                <div className="text-center">
-                  <p className="text-lg font-medium mb-1">
-                    Select a Park to get started
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    Choose a park from the dropdown above to view its calendar and daily plans.
-                  </p>
-                </div>
-              }
-            />
-          </div>
-        ) : (
-          <Tabs items={tabItems} />
-        )}
+        <Tabs items={tabItems} />
       </div>
 
       <DayPlanSheet
