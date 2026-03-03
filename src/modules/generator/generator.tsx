@@ -10,14 +10,13 @@ import { LoadScheduleDay } from "@/common/types/load-schedule";
 import GeneratorFilters from "@/common/components/generator-filters";
 import GeneratorDayViewModal from "./components/GeneratorDayViewModal";
 import { FilterOutlined } from "@ant-design/icons";
-import { useRouter } from "next/router";
+import { useGlobals } from "@/common/context/globals";
 
 const presentDate = dayjs();
 
 const Generator = () => {
-  const router = useRouter();
-  const parkId = typeof router.query.parkId === "string" ? router.query.parkId : null;
-  const factoryId = typeof router.query.factoryId === "string" ? router.query.factoryId : null;
+  const { currentPark } = useGlobals();
+  const { parkId, factoryId } = currentPark ?? {};
 
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

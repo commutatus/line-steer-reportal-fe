@@ -3,15 +3,20 @@ import { GetContractsQuery, GetContractsQueryVariables } from "@/generated/graph
 import { useQuery } from "@apollo/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-interface SelectedPark {
+interface ParkOption {
   id: string;
   name: string | null;
   city: string | null;
-  contractId: string;
+}
+
+interface FactoryOption {
+  id: string;
+  name: string | null;
 }
 
 const useCurrentPark = () => {
-  const [selectedPark, setSelectedPark] = useState<SelectedPark | null>(null);
+  const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
+  const [selectedFactoryId, setSelectedFactoryId] = useState<string | null>(null);
 
   const { data: contractsData, loading: contractsLoading } = useQuery<
     GetContractsQuery,
@@ -23,40 +28,97 @@ const useCurrentPark = () => {
     [contractsData]
   );
 
-  const parks = useMemo(
-    () =>
-      contracts.map((contract) => ({
-        id: contract.park?.id ?? "",
-        name: contract.park?.name ?? null,
-        city: contract.park?.city ?? null,
-        contractId: contract.id,
-      })),
-    [contracts]
+  const parks = useMemo(() => {
+    const seen = new Set<string>();
+    return contracts.reduce<ParkOption[]>((acc, contract) => {
+      const id = contract.park?.id;
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        acc.push({
+          id,
+          name: contract.park?.name ?? null,
+          city: contract.park?.city ?? null,
+        });
+      }
+      return acc;
+    }, []);
+  }, [contracts]);
+
+  const factories = useMemo(() => {
+    if (!selectedParkId) {
+      return [];
+    }
+    const seen = new Set<string>();
+    return contracts
+      .filter((contract) => contract.park?.id === selectedParkId)
+      .reduce<FactoryOption[]>((acc, contract) => {
+        const id = contract.factory?.id;
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          acc.push({
+            id,
+            name: contract.factory?.name ?? null,
+          });
+        }
+        return acc;
+      }, []);
+  }, [contracts, selectedParkId]);
+
+  const selectedPark = useMemo(
+    () => parks.find((p) => p.id === selectedParkId) ?? null,
+    [parks, selectedParkId]
   );
+
+  const selectedFactory = useMemo(
+    () => factories.find((f) => f.id === selectedFactoryId) ?? null,
+    [factories, selectedFactoryId]
+  );
+
+  const contractId = useMemo(() => {
+    if (!selectedParkId) {
+      return null;
+    }
+    const matchingContract = contracts.find((contract) => {
+      const parkMatches = contract.park?.id === selectedParkId;
+      if (selectedFactoryId) {
+        return parkMatches && contract.factory?.id === selectedFactoryId;
+      }
+      return parkMatches;
+    });
+    return matchingContract?.id ?? null;
+  }, [contracts, selectedParkId, selectedFactoryId]);
 
   const selectPark = useCallback(
     (parkId: string) => {
-      const park = parks.find((p) => p.id === parkId) ?? null;
-      setSelectedPark(park);
+      setSelectedParkId(parkId);
+      setSelectedFactoryId(null);
     },
-    [parks]
+    []
+  );
+
+  const selectFactory = useCallback(
+    (factoryId: string | null) => {
+      setSelectedFactoryId(factoryId);
+    },
+    []
   );
 
   useEffect(() => {
-    if (!selectedPark && parks.length > 0) {
-      setSelectedPark(parks[0]);
+    if (!selectedParkId && parks.length > 0) {
+      setSelectedParkId(parks[0].id);
     }
-  }, [parks, selectedPark]);
-
-  const parkId = selectedPark?.id ?? null;
-  const contractId = selectedPark?.contractId ?? null;
+  }, [parks, selectedParkId]);
 
   return {
     selectedPark,
+    selectedFactory,
     parks,
-    parkId,
+    factories,
+    parkId: selectedParkId,
+    factoryId: selectedFactoryId,
     contractId,
     selectPark,
+    selectFactory,
     contractsLoading,
   };
 };
