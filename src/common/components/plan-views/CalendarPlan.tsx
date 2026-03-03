@@ -4,9 +4,9 @@ import dayjs from "dayjs";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { fillConfig } from "@/common/constants/plan-status";
+import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
-import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
+import { SelectInfo } from "antd/es/calendar/generateCalendar";
 
 const cx = classNames.bind(styles);
 
@@ -21,14 +21,17 @@ interface CalendarPlanProps {
 const CalendarPlan = (props: CalendarPlanProps) => {
   const { loadScheduledDays, onDayClick, currentDate, onDateChange, description } = props;
 
-  const getStatusForDate = (date: Dayjs): LoadScheduleDayStatusEnum => {
+  const getPlanStatusForDate = (date: Dayjs): PlanStatus => {
     const dateStr = date.format("YYYY-MM-DD");
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === dateStr);
-    return loadScheduleDay?.status ?? LoadScheduleDayStatusEnum.Pending;
+    if (!loadScheduleDay?.status) {
+      return PlanStatus.NotAvailable;
+    }
+    return loadScheduleDay.status;
   };
 
   const dateCellRender = (date: Dayjs) => {
-    const status = getStatusForDate(date);
+    const status = getPlanStatusForDate(date);
     const isSelectedMonth = date.month() === currentDate.month();
     if (!isSelectedMonth) return null;
 
@@ -44,8 +47,8 @@ const CalendarPlan = (props: CalendarPlanProps) => {
     );
   };
 
-  const handleSelect = (date: Dayjs) => {
-    if (onDayClick) {
+  const handleSelect = (date: Dayjs, selectInfo: SelectInfo) => {
+    if (selectInfo.source === "date" && onDayClick) {
       onDayClick(date.format("YYYY-MM-DD"));
     }
   };
@@ -79,7 +82,7 @@ const CalendarPlan = (props: CalendarPlanProps) => {
           mode="month"
           cellRender={(date, info) => {
             if (info.type === "date") {
-              const status = getStatusForDate(date);
+              const status = getPlanStatusForDate(date);
               const isSelectedMonth = date.month() === currentDate.month();
               const bgClass = isSelectedMonth ? fillConfig[status].bgClass : "";
               return (
