@@ -14,7 +14,7 @@ interface DayPlanSheetProps {
   initialData?: TimeSlot[];
   yesterdayData?: TimeSlot[];
   loadScheduleIds?: string[];
-  plantId: string;
+  parkId: string;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -52,7 +52,7 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds, plantId } = props;
+  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds, parkId } = props;
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
   );
@@ -67,7 +67,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
           query: GET_LOAD_SCHEDULED_DAYS,
           variables: {
             filters: {
-              parkIds: [plantId],
+              parkIds: [parkId],
             },
           },
         },

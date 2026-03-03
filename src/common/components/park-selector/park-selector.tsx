@@ -12,8 +12,8 @@ type Park = {
   city?: string | null;
 }
 
-const PlantSelector = () => {
-  const [selectedPlant, setSelectedPlant] = useState<Park | null>(null);
+const ParkSelector = () => {
+  const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const router = useRouter();
   const { data: contractsData } = useQuery<GetContractsQuery, GetContractsQueryVariables>(GET_CONTRACTS);
   const contracts = useMemo(() => contractsData?.contracts?.data ?? [], [contractsData]);
@@ -24,44 +24,44 @@ const PlantSelector = () => {
     location: contract.park?.city,
   })), [contracts]);
 
-  const plantMenuItems: MenuProps['items'] = [
-    ...parks.map(plant => ({
-      key: plant.id ?? "",
+  const parkMenuItems: MenuProps['items'] = [
+    ...parks.map(park => ({
+      key: park.id ?? "",
       icon: <EnvironmentOutlined />,
       label: (
         <div className="flex flex-col">
-          <span>{plant.name}</span>
-          <span className="text-xs text-gray-500">{plant.location}</span>
+          <span>{park.name}</span>
+          <span className="text-xs text-gray-500">{park.location}</span>
         </div>
       ),
     })),
   ];
 
-  const handlePlantMenuClick: MenuProps["onClick"] = (e) => {
-    setSelectedPlant(parks.find(park => park.id === e?.key) ?? null);
+  const handleParkMenuClick: MenuProps["onClick"] = (e) => {
+    setSelectedPark(parks.find(park => park.id === e?.key) ?? null);
     router.push({
       pathname: "/consumer",
       query: {
-        plantId: e?.key,
+        parkId: e?.key,
       }
     })
   };
 
   useEffect(() => {
-    const plantId = router.query.plantId as string;
-    setSelectedPlant(parks.find(plant => plant.id === plantId) ?? parks?.[0]);
-  }, [router.query.plantId, parks]);
+    const parkId = typeof router.query.parkId === "string" ? router.query.parkId : null;
+    setSelectedPark(parks.find(park => park.id === parkId) ?? parks?.[0]);
+  }, [router.query.parkId, parks]);
 
   return (
     <Dropdown
-      menu={{ items: plantMenuItems, onClick: handlePlantMenuClick }}
+      menu={{ items: parkMenuItems, onClick: handleParkMenuClick }}
       trigger={['click']}
     >
       <Button icon={<EnvironmentOutlined />}>
-        {selectedPlant?.name || 'Select Plant'} <DownOutlined />
+        {selectedPark?.name || 'Select Park'} <DownOutlined />
       </Button>
     </Dropdown>
   );
 }
 
-export default PlantSelector;
+export default ParkSelector;

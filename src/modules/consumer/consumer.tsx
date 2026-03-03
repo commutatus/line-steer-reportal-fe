@@ -9,19 +9,19 @@ import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { useRouter } from "next/router";
 import dayjs from "dayjs";
-import PlantSelector from "@/common/components/plant-selector";
+import ParkSelector from "@/common/components/park-selector";
 
 const presentDate = dayjs();
 
 const Consumer = () => {
   const router = useRouter();
-  const plantId = typeof router.query.plantId === "string" ? router.query.plantId : "1";
+  const parkId = typeof router.query.parkId === "string" ? router.query.parkId : "1";
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
-        parkIds: [plantId],
+        parkIds: [parkId],
         dateRange: {
           from: currentDate.startOf("month").toISOString(),
           to: currentDate.endOf("month").toISOString(),
@@ -32,7 +32,7 @@ const Consumer = () => {
         direction: SortDirection.Asc,
       },
     },
-    skip: !plantId,
+    skip: !parkId,
   });
   const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
@@ -86,7 +86,7 @@ const Consumer = () => {
 
   if (loadScheduledDaysLoading) {
     return (
-      <RootLayout pageTitle="Consumer" navbarExtra={<PlantSelector />}>
+      <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-lg">Loading...</div>
         </div>
@@ -121,7 +121,7 @@ const Consumer = () => {
   ];
 
   return (
-    <RootLayout pageTitle="Consumer" navbarExtra={<PlantSelector />}>
+    <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
       <div className="p-6">
         <Tabs items={tabItems} />
       </div>
@@ -134,7 +134,7 @@ const Consumer = () => {
         initialData={initialTimeSlots}
         yesterdayData={yesterdayTimeSlots}
         loadScheduleIds={loadScheduleIds}
-        plantId={plantId}
+        parkId={parkId}
       />
     </RootLayout>
   );
