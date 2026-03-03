@@ -31,8 +31,8 @@ const Generator = () => {
         parkIds: parkId ? [parkId] : undefined,
         factoryIds: factoryId ? [factoryId] : undefined,
         dateRange: {
-          from: currentDate.startOf("month").toISOString(),
-          to: currentDate.endOf("month").toISOString(),
+          from: currentDate.startOf("month").format("YYYY-MM-DD"),
+          to: currentDate.endOf("month").format("YYYY-MM-DD"),
         },
       },
       sort: {

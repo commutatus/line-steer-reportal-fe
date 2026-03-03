@@ -33,8 +33,8 @@ const LoadGraph = () => {
       },
       filters: {
         dateRange: {
-          from: presentDate.subtract(7, 'day').toISOString(),
-          to: presentDate.toISOString(),
+          from: presentDate.subtract(7, 'day').format("YYYY-MM-DD"),
+          to: presentDate.format("YYYY-MM-DD"),
         }
       }
     }

@@ -21,8 +21,8 @@ const DayWisePlan = () => {
     variables: {
       filters: {
         dateRange: {
-          from: presentDate.startOf("month").toISOString(),
-          to: presentDate.endOf("month").toISOString(),
+          from: presentDate.startOf("month").format("YYYY-MM-DD"),
+          to: presentDate.endOf("month").format("YYYY-MM-DD"),
         }
       },
       sort: {

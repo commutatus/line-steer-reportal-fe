@@ -23,8 +23,8 @@ const Consumer = () => {
       filters: {
         parkIds: [parkId],
         dateRange: {
-          from: currentDate.startOf("month").toISOString(),
-          to: currentDate.endOf("month").toISOString(),
+          from: currentDate.startOf("month").format("YYYY-MM-DD"),
+          to: currentDate.endOf("month").format("YYYY-MM-DD"),
         }
       },
       sort: {
