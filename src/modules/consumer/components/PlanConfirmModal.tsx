@@ -123,16 +123,11 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       dataIndex: "yesterdayValue",
       key: "yesterdayValue",
       width: 120,
-      render: (v: number | null, record: ChangeRow) => {
-        if (record?.oldValue === null || record?.newValue === null) {
-          return <Tag>N/A</Tag>;
-        }
-        return (
+      render: (v: number | null) => (
           <span className="text-gray-500">
-            {(record?.oldValue + record?.newValue) / 2}
+            {v?.toFixed(2)}
           </span>
-        );
-      },
+        )
     },
     {
       title: "Deviation",
