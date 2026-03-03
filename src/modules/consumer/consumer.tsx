@@ -134,7 +134,6 @@ const Consumer = () => {
         initialData={initialTimeSlots}
         yesterdayData={yesterdayTimeSlots}
         loadScheduleIds={loadScheduleIds}
-        parkId={parkId}
       />
     </RootLayout>
   );

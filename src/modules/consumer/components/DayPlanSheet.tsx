@@ -3,7 +3,6 @@ import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
 import { gql, useMutation } from "@apollo/client";
 import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
-import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import PlanConfirmModal from "./PlanConfirmModal";
 
 interface DayPlanSheetProps {
@@ -14,7 +13,6 @@ interface DayPlanSheetProps {
   initialData?: TimeSlot[];
   yesterdayData?: TimeSlot[];
   loadScheduleIds?: string[];
-  parkId: string;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -31,13 +29,16 @@ const generateTimeSlots = (): TimeSlot[] => {
 const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
   mutation BulkUpdateLoadSchedules($input: BulkUpdateInput!) {
     bulkUpdateLoadSchedules(input: $input) {
-      createdAt
-      endTime
       id
       load
       pastAverageLoad
       startTime
-      updatedAt
+      endTime
+      loadScheduleDay {
+        date
+        id
+        status
+      }
     }
   }
 `;
@@ -52,28 +53,14 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds, parkId } = props;
+  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds } = props;
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const [bulkUpdateLoadSchedules, { 
     loading: bulkUpdateLoadSchedulesLoading,
-  }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(
-    BULK_UPDATE_LOAD_SCHEDULES_MUTATION,
-    {
-      refetchQueries: [
-        {
-          query: GET_LOAD_SCHEDULED_DAYS,
-          variables: {
-            filters: {
-              parkIds: [parkId],
-            },
-          },
-        },
-      ],
-    }
-  );
+  }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(BULK_UPDATE_LOAD_SCHEDULES_MUTATION);
 
   useEffect(() => {
     if (date) {
