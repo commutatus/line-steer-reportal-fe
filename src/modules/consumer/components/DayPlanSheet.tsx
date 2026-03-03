@@ -13,7 +13,7 @@ interface DayPlanSheetProps {
   onOpenChange: (open: boolean) => void;
   onSave: (date: string, timeSlots: TimeSlot[]) => void;
   initialData?: TimeSlot[];
-  yesterdayData?: TimeSlot[];
+  averageData?: TimeSlot[];
   loadScheduleIds?: string[];
 }
 
@@ -38,7 +38,7 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData, yesterdayData, loadScheduleIds } = props;
+  const { date, open, onOpenChange, onSave, initialData, averageData, loadScheduleIds } = props;
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
   );
@@ -201,7 +201,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
           date={date}
           currentSlots={timeSlots}
           previousSlots={initialData}
-          yesterdaySlots={yesterdayData}
+          averageSlots={averageData}
         />
       )}
     </>

@@ -12,7 +12,7 @@ interface PlanConfirmModalProps {
   date: string;
   currentSlots: TimeSlot[];
   previousSlots?: TimeSlot[];
-  yesterdaySlots?: TimeSlot[];
+  averageSlots?: TimeSlot[];
 }
 
 interface ChangeRow {
@@ -20,16 +20,16 @@ interface ChangeRow {
   time: string;
   oldValue: number | null;
   newValue: number | null;
-  yesterdayValue: number | null;
-  deviatesFromYesterday: boolean;
+  averageValue: number | null;
+  deviatesFromAverage: boolean;
   deviation: number | null;
 }
 
-const getDeviation = (newVal: number | null, yVal: number | null, deviation: number | null): boolean => {
-  if (newVal === null || yVal === null || yVal === 0 || deviation === null) {
+const getDeviation = (newVal: number | null, avgVal: number | null, deviation: number | null): boolean => {
+  if (newVal === null || avgVal === null || avgVal === 0 || deviation === null) {
     return false;
   }
-  return Math.abs(((newVal - yVal) / yVal) * 100) > deviation;
+  return Math.abs(((newVal - avgVal) / avgVal) * 100) > deviation;
 };
 
 const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
@@ -39,28 +39,28 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
   date,
   currentSlots,
   previousSlots,
-  yesterdaySlots,
+  averageSlots,
 }) => {
   const changes: ChangeRow[] = useMemo(() => {
     const rows: ChangeRow[] = [];
     currentSlots.forEach((slot, i) => {
       const oldVal = previousSlots?.[i]?.mw ?? null;
       const newVal = slot.mw;
-      const yVal = yesterdaySlots?.[i]?.mw ?? null;
+      const avgVal = averageSlots?.[i]?.mw ?? null;
       if (oldVal !== newVal) {
         rows.push({
           key: String(i),
           time: convertToUTCHoursFormat(slot.time),
           oldValue: oldVal,
           newValue: newVal,
-          yesterdayValue: yVal,
-          deviatesFromYesterday: getDeviation(newVal, yVal, slot.deviation),
+          averageValue: avgVal,
+          deviatesFromAverage: getDeviation(newVal, avgVal, slot.deviation),
           deviation: slot.deviation,
         });
       }
     });
     return rows;
-  }, [currentSlots, previousSlots, yesterdaySlots]);
+  }, [currentSlots, previousSlots, averageSlots]);
 
   const changeColumns = [
     {
@@ -71,7 +71,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       render: (v: string, record: ChangeRow) => (
         <span
           className={classNames("text-sm", {
-            "font-bold": record.deviatesFromYesterday,
+            "font-bold": record.deviatesFromAverage,
           })}
         >
           {v}
@@ -120,8 +120,8 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     },
     {
       title: "Average (MW)",
-      dataIndex: "yesterdayValue",
-      key: "yesterdayValue",
+      dataIndex: "averageValue",
+      key: "averageValue",
       width: 120,
       render: (v: number | null) => (
           <span className="text-gray-500">
@@ -136,13 +136,13 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       render: (_: unknown, record: ChangeRow) => {
         if (
           record.newValue === null ||
-          record.yesterdayValue === null ||
-          record.yesterdayValue === 0
+          record.averageValue === null ||
+          record.averageValue === 0
         ) {
           return <span className="text-gray-400">—</span>;
         }
         const pct =
-          ((record.newValue - record.yesterdayValue) / record.yesterdayValue) *
+          ((record.newValue - record.averageValue) / record.averageValue) *
           100;
         const isOver = Math.abs(pct) > (record.deviation ?? 0);
         return (
@@ -158,14 +158,14 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
   const chartOption = useMemo(() => {
     const times = currentSlots.map((s) => convertToUTCHoursFormat(s.time));
     const todayValues = currentSlots.map((s) => s.mw ?? 0);
-    const yesterdayValues = yesterdaySlots
-      ? yesterdaySlots.map((s) => s.mw ?? 0)
+    const averageValues = averageSlots
+      ? averageSlots.map((s) => s.mw ?? 0)
       : [];
 
     const markData: { coord: [number, number]; itemStyle: { color: string } }[] = [];
-    if (yesterdaySlots) {
+    if (averageSlots) {
       currentSlots.forEach((slot, i) => {
-        if (getDeviation(slot.mw, yesterdaySlots[i]?.mw ?? null, slot.deviation)) {
+        if (getDeviation(slot.mw, averageSlots[i]?.mw ?? null, slot.deviation)) {
           markData.push({
             coord: [i, slot.mw ?? 0],
             itemStyle: { color: "#dc2626" },
@@ -209,11 +209,11 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       },
     ];
 
-    if (yesterdaySlots && yesterdaySlots.length > 0) {
+    if (averageSlots && averageSlots.length > 0) {
       series.push({
         name: "Average",
         type: "line",
-        data: yesterdayValues,
+        data: averageValues,
         smooth: true,
         lineStyle: { type: "dashed", width: 2 },
         color: "#94a3b8",
@@ -232,17 +232,17 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
             html += `${p.marker} ${p.seriesName}: <strong>${p.value.toFixed(2)} MW</strong><br/>`;
           });
           if (
-            yesterdaySlots &&
+            averageSlots &&
             getDeviation(
               currentSlots[idx]?.mw ?? null,
-              yesterdaySlots[idx]?.mw ?? null,
+              averageSlots[idx]?.mw ?? null,
               currentSlots[idx]?.deviation ?? null,
             )
           ) {
-            const yVal = yesterdaySlots[idx]?.mw ?? 0;
+            const avgVal = averageSlots[idx]?.mw ?? 0;
             const pct =
-              yVal !== 0
-                ? (((currentSlots[idx]?.mw ?? 0) - yVal) / yVal) * 100
+              avgVal !== 0
+                ? (((currentSlots[idx]?.mw ?? 0) - avgVal) / avgVal) * 100
                 : 0;
             html += `<span style="color:#dc2626;font-weight:bold">⚠ ${pct > 0 ? "+" : ""}${pct.toFixed(1)}% from average</span>`;
           }
@@ -270,7 +270,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       },
       series,
     };
-  }, [currentSlots, yesterdaySlots]);
+  }, [currentSlots, averageSlots]);
 
   const formattedDate = useMemo(() => {
     const d = new Date(date);
@@ -282,7 +282,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     });
   }, [date]);
 
-  const deviatingChanges = changes.filter((c) => c.deviatesFromYesterday);
+  const deviatingChanges = changes.filter((c) => c.deviatesFromAverage);
   const deviationCount = deviatingChanges.length;
   const uniqueDeviationThresholds = [
     ...new Set(deviatingChanges.map((c) => c.deviation).filter((d): d is number => d !== null)),
@@ -310,7 +310,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       <div className="space-y-4">
         <div>
           <h4 className="text-sm font-medium mb-2!">
-            Load Profile {yesterdaySlots ? "(vs Average)" : ""}
+            Load Profile {averageSlots ? "(vs Average)" : ""}
           </h4>
           <div className="border rounded-lg p-2 bg-gray-50">
             <ReactECharts
@@ -347,7 +347,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
               bordered
               rowClassName={(record) =>
                 classNames({
-                  "bg-red-50": record.deviatesFromYesterday,
+                  "bg-red-50": record.deviatesFromAverage,
                 })
               }
             />

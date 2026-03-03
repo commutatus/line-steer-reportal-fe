@@ -75,7 +75,7 @@ const Consumer = () => {
     }));
   }, [selectedDate, loadScheduledDays]);
 
-  const yesterdayTimeSlots = useMemo((): TimeSlot[] | undefined => {
+  const averageTimeSlots = useMemo((): TimeSlot[] | undefined => {
     if (!selectedDate) return undefined;
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
     if (!loadScheduleDay?.loadSchedules) return undefined;
@@ -168,7 +168,7 @@ const Consumer = () => {
         onOpenChange={setIsDayPlanSheetOpen}
         onSave={handleSaveTimeSlots}
         initialData={initialTimeSlots}
-        yesterdayData={yesterdayTimeSlots}
+        averageData={averageTimeSlots}
         loadScheduleIds={loadScheduleIds}
       />
     </RootLayout>
