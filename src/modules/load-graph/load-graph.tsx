@@ -1,7 +1,7 @@
 import RootLayout from "@/common/layouts/root-layout";
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Checkbox } from "antd";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import ReactECharts from "echarts-for-react";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
@@ -75,35 +75,97 @@ const LoadGraph = () => {
     setVisibleParks(initialVisibility);
   }, [availableParks, availableFactories, userType]);
 
-  const chartData = useMemo(() => {
-    return loadSummary.map((item) => {
-      const dataPoint: Record<string, string | number> = {
-        date: dayjs(item.date).format('MMM DD'),
-        total: userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
-      };
-      
-      if (userType === UserType.CONSUMER) {
-        item.parkLoads?.forEach((parkLoad) => {
-          if (parkLoad.park?.id) {
-            dataPoint[`park_${parkLoad.park.id}`] = parkLoad.totalLoad;
-          }
-        });
-      } else {
-        item.factoryLoads?.forEach((factoryLoad) => {
-          if (factoryLoad.factory?.id) {
-            dataPoint[`factory_${factoryLoad.factory.id}`] = factoryLoad.totalLoad;
-          }
-        });
-      }
-      return dataPoint;
+  const plants = userType === UserType.CONSUMER ? availableParks : availableFactories;
+
+  const chartOption = useMemo(() => {
+    const dates = loadSummary.map((item) => dayjs(item.date).format('MMM DD'));
+
+    const series: {
+      name: string;
+      type: string;
+      data: number[];
+      smooth: boolean;
+      color: string;
+      lineStyle?: { type: string; width: number };
+      symbol: string;
+      symbolSize: number;
+    }[] = [];
+
+    plants.forEach((plant, index) => {
+      if (!visibleParks[plant.id]) return;
+      const color = CHART_COLORS[index % CHART_COLORS.length];
+      const seriesData = loadSummary.map((item) => {
+        if (userType === UserType.CONSUMER) {
+          const parkLoad = item.parkLoads?.find((p) => p.park?.id === plant.id);
+          return parkLoad?.totalLoad ?? 0;
+        }
+        const factoryLoad = item.factoryLoads?.find((f) => f.factory?.id === plant.id);
+        return factoryLoad?.totalLoad ?? 0;
+      });
+
+      series.push({
+        name: plant.name,
+        type: 'line',
+        data: seriesData,
+        smooth: true,
+        color,
+        symbol: 'circle',
+        symbolSize: 8,
+      });
     });
-  }, [loadSummary, userType]);
+
+    if (showTotal) {
+      const totalData = loadSummary.map((item) =>
+        userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
+      );
+      series.push({
+        name: 'Total',
+        type: 'line',
+        data: totalData,
+        smooth: true,
+        color: '#64748b',
+        lineStyle: { type: 'dashed', width: 2 },
+        symbol: 'circle',
+        symbolSize: 8,
+      });
+    }
+
+    return {
+      tooltip: {
+        trigger: 'axis' as const,
+      },
+      legend: {
+        bottom: 0,
+        icon: 'circle',
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        top: '8%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category' as const,
+        data: dates,
+        boundaryGap: false,
+        axisLabel: { fontSize: 12 },
+        axisLine: { lineStyle: { color: '#64748b' } },
+      },
+      yAxis: {
+        type: 'value' as const,
+        name: 'Load (MWh)',
+        axisLabel: { fontSize: 12 },
+        axisLine: { lineStyle: { color: '#64748b' } },
+        splitLine: { lineStyle: { type: 'dashed' as const, color: '#e2e8f0' } },
+      },
+      series,
+    };
+  }, [loadSummary, userType, plants, visibleParks, showTotal]);
 
   const handleParkToggle = (parkId: string, checked: boolean) => {
     setVisibleParks((prev) => ({ ...prev, [parkId]: checked }));
   };
-
-  const plants = userType === UserType.CONSUMER ? availableParks : availableFactories;
 
   return (
     <RootLayout pageTitle="Load Graph">
@@ -138,60 +200,11 @@ const LoadGraph = () => {
           </div>
           
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="#64748b"
-                  style={{ fontSize: '12px' }}
-                />
-                <YAxis 
-                  label={{ value: 'Load (MWh)', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
-                  stroke="#64748b"
-                  style={{ fontSize: '12px' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}
-                />
-                <Legend 
-                  wrapperStyle={{ paddingTop: '20px' }}
-                  iconType="circle"
-                />
-                {plants.map((plant, index) => {
-                  const color = CHART_COLORS[index % CHART_COLORS.length];
-                  return visibleParks[plant.id] ? (
-                    <Line 
-                      key={plant.id}
-                      type="monotone" 
-                      dataKey={userType === UserType.CONSUMER ? `park_${plant.id}` : `factory_${plant.id}`}
-                      stroke={color}
-                      strokeWidth={2}
-                      name={plant.name}
-                      dot={{ fill: color, r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  ) : null;
-                })}
-                {showTotal && (
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#64748b" 
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    name="Total"
-                    dot={{ fill: '#64748b', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
+            <ReactECharts
+              option={chartOption}
+              style={{ height: '400px' }}
+              notMerge
+            />
           </div>
         </div>
       </div>
