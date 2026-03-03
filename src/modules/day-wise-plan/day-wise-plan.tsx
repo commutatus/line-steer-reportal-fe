@@ -60,7 +60,7 @@ const DayWisePlan = () => {
       render: (date: string) => dayjs(date).format("MMM DD, YYYY"),
     },
     {
-      title: "Plant",
+      title: userType === UserType.CONSUMER ? "Park" : "Factory",
       dataIndex: "plant",
       key: "plant",
     },
@@ -105,7 +105,7 @@ const DayWisePlan = () => {
                 value={statusFilter}
                 onChange={setStatusFilter}
                 options={statusOptions}
-                style={{ width: 150 }}
+                className="w-[150px]!"
               />
             </div>
           </div>

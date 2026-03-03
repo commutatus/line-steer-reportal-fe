@@ -3,6 +3,7 @@ import { Modal, Table, Tag } from "antd";
 import ReactECharts from "echarts-for-react";
 import { TimeSlot } from "@/common/utils/data/types";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
+import classNames from "classnames";
 
 interface PlanConfirmModalProps {
   open: boolean;
@@ -69,7 +70,9 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       width: 80,
       render: (v: string, record: ChangeRow) => (
         <span
-          className={`font-mono text-sm ${record.deviatesFromYesterday ? "font-bold" : ""}`}
+          className={classNames("text-sm", {
+            "font-bold": record.deviatesFromYesterday,
+          })}
         >
           {v}
         </span>
@@ -102,13 +105,10 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
             {v.toFixed(2)}
             {diff !== null && (
               <span
-                className={`ml-1 text-xs ${
-                  diff > 0
-                    ? "text-green-600"
-                    : diff < 0
-                      ? "text-red-600"
-                      : ""
-                }`}
+                className={classNames("ml-1 text-xs", {
+                  "text-green-600": diff > 0,
+                  "text-red-600": diff < 0,
+                })}
               >
                 ({diff > 0 ? "+" : ""}
                 {diff.toFixed(2)})
@@ -307,11 +307,14 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       okText="Submit"
       cancelText="Go Back"
       width={960}
-      styles={{ body: { maxHeight: "75vh", overflow: "auto" } }}
+      classNames={{
+        body: "max-h-[75vh] overflow-auto"
+      }}
+      centered
     >
       <div className="space-y-4">
         <div>
-          <h4 className="text-sm font-medium mb-2">
+          <h4 className="text-sm font-medium mb-2!">
             Load Profile {yesterdaySlots ? "(vs Average)" : ""}
           </h4>
           <div className="border rounded-lg p-2 bg-gray-50">
@@ -324,7 +327,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
         </div>
 
         <div>
-          <h4 className="text-sm font-medium mb-2">
+          <h4 className="text-sm font-medium mb-2!">
             Changes Made{" "}
             <Tag color={changes.length > 0 ? "blue" : "default"}>
               {changes.length} slot{changes.length !== 1 ? "s" : ""}
@@ -347,9 +350,10 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
               pagination={false}
               size="small"
               bordered
-              scroll={{ y: 200 }}
               rowClassName={(record) =>
-                record.deviatesFromYesterday ? "bg-red-50" : ""
+                classNames({
+                  "bg-red-50": record.deviatesFromYesterday,
+                })
               }
             />
           )}

@@ -164,7 +164,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
       key: "hour",
       width: 80,
       fixed: "left" as const,
-      render: (v: string) => <span className="font-mono text-sm font-medium">{v}</span>,
+      render: (v: string) => <span className="text-sm font-medium">{v}</span>,
     },
     ...[0, 1, 2, 3].map((q) => ({
       title: `:${(q * 15).toString().padStart(2, "0")}`,

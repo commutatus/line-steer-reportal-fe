@@ -81,8 +81,7 @@ const Login = (props: LoginProps) => {
           htmlType="submit"
           size="large"
           block
-          className="h-12 rounded-lg font-semibold !bg-black hover:!bg-gray-800"
-          style={{ border: "none" }}
+          className="h-12 rounded-lg font-semibold border-none! bg-black! hover:bg-gray-800!"
           loading={isRequestingOtp}
         >
           Send OTP

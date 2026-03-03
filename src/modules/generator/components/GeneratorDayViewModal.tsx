@@ -59,7 +59,7 @@ const GeneratorDayViewModal = ({
       width: 80,
       fixed: "left" as const,
       render: (v: string) => (
-        <span className="font-mono text-sm font-medium">{v}</span>
+        <span className="text-sm font-medium">{v}</span>
       ),
     },
     ...[0, 1, 2, 3].map((q) => ({
@@ -68,7 +68,7 @@ const GeneratorDayViewModal = ({
       key: `q${q}`,
       width: 100,
       align: "right" as const,
-      render: (v: string) => <span className="font-mono text-sm">{v}</span>,
+      render: (v: string) => <span className="text-sm">{v}</span>,
     })),
   ];
 
@@ -174,6 +174,7 @@ const GeneratorDayViewModal = ({
       footer={null}
       width={640}
       destroyOnHidden
+      centered
     >
       <Tabs defaultActiveKey="grid" items={tabItems} />
     </Modal>

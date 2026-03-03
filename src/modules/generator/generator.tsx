@@ -102,13 +102,12 @@ const Generator = () => {
       <div className="p-6">
         {!hasSelection ? (
           <div
-            className="flex items-center justify-center"
-            style={{ minHeight: "calc(100vh - 200px)" }}
+            className="flex items-center justify-center min-h-[calc(100vh-200px)]"
           >
             <Empty
               image={
                 <FilterOutlined
-                  style={{ fontSize: 64, color: "#d1d5db" }}
+                  className="text-gray-300! text-[64px]"
                 />
               }
               description={
