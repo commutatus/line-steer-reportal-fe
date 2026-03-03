@@ -1,132 +1,141 @@
 import React, { useMemo, useState } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Row, Col, Card, Statistic, Table, Tag } from "antd";
+import { Empty, Tabs } from "antd";
 import dayjs from "dayjs";
-import RequestDetailsSheet from "./components/RequestDetailsSheet";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
-import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, LoadScheduleDayStatusEnum, SortDirection } from "@/generated/graphql";
-import { fillConfig } from "../consumer/consumer-utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { LoadSchedule } from "./generator.types";
+import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
+import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
+import { LoadScheduleDay } from "@/common/types/load-schedule";
 import GeneratorFilters from "@/common/components/generator-filters";
+import GeneratorDayViewModal from "./components/GeneratorDayViewModal";
+import { FilterOutlined } from "@ant-design/icons";
+import { useRouter } from "next/router";
 
 const presentDate = dayjs();
 
 const Generator = () => {
-  const [selectedRequest, setSelectedRequest] = useState<LoadSchedule | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const { data } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
+  const router = useRouter();
+  const parkId = typeof router.query.parkId === "string" ? router.query.parkId : null;
+  const factoryId = typeof router.query.factoryId === "string" ? router.query.factoryId : null;
+
+  const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isDayViewOpen, setIsDayViewOpen] = useState(false);
+
+  const hasSelection = Boolean(parkId && factoryId);
+
+  const { data, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
+        parkIds: parkId ? [parkId] : undefined,
+        factoryIds: factoryId ? [factoryId] : undefined,
         dateRange: {
-          from: presentDate.startOf("month").toISOString(),
-          to: presentDate.endOf("month").toISOString(),
-        }
+          from: currentDate.startOf("month").toISOString(),
+          to: currentDate.endOf("month").toISOString(),
+        },
       },
       sort: {
         column: LoadScheduleDaySortColumn.Date,
         direction: SortDirection.Asc,
-      }
-    }
+      },
+    },
+    skip: !hasSelection,
   });
 
-  const loadScheduledDays = useMemo(() => data?.loadScheduleDays?.data || [], [data]);
+  const loadScheduledDays = useMemo(() => data?.loadScheduleDays?.data ?? [], [data]);
 
-  const totalCount = loadScheduledDays.length;
-  const plannedCount = useMemo(
-    () => loadScheduledDays.filter((r) => r.status === LoadScheduleDayStatusEnum.Ready).length,
-    [loadScheduledDays],
-  );
+  const selectedLoadScheduleDay = useMemo((): LoadScheduleDay | null => {
+    if (!selectedDate) {
+      return null;
+    }
+    return loadScheduledDays.find((day) => day.date === selectedDate) ?? null;
+  }, [selectedDate, loadScheduledDays]);
 
-  const handleRowClick = (record: LoadSchedule) => {
-    setSelectedRequest(record);
-    setSheetOpen(true);
+  const handleDayClick = (date: string) => {
+    setSelectedDate(date);
+    setIsDayViewOpen(true);
   };
 
-  const columns = [
+  const handleDateChange = (date: dayjs.Dayjs) => {
+    setCurrentDate(date);
+  };
+
+  const tabItems = [
     {
-      title: "Plant",
-      dataIndex: ["park", "name"],
-      key: "plantName",
-      render: (plantName: string, record: LoadSchedule) => (
-        <div>
-          <p>{plantName}</p>
-          <p className="text-sm text-gray-500">
-            {record.park?.city}
-          </p>
-        </div>
+      key: "calendar",
+      label: "Calendar",
+      children: (
+        <CalendarPlan
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+          currentDate={currentDate}
+          onDateChange={handleDateChange}
+          description="Click on any day to view the daily plan"
+        />
       ),
     },
     {
-      title: "Date",
-      dataIndex: "date",
-      key: "date",
-      render: (date: string) => dayjs(date).format("MMM DD, YYYY"),
-    },
-    {
-      title: "Total Load (MW)",
-      dataIndex: "totalLoad",
-      key: "totalLoad",
-      align: "right" as const,
-      render: (val: number) => val.toFixed(2),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: LoadScheduleDayStatusEnum) => {
-        const config = fillConfig[status];
-        return (
-          <Tag color={config.color}>
-            <FontAwesomeIcon icon={config.icon} className="mr-2" />
-            {config.label}
-          </Tag>
-        )
-      },
+      key: "table",
+      label: "Table",
+      children: (
+        <TablePlan
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+        />
+      ),
     },
   ];
+
+  if (loadScheduledDaysLoading) {
+    return (
+      <RootLayout pageTitle="Requests" navbarExtra={<GeneratorFilters />}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </RootLayout>
+    );
+  }
 
   return (
     <RootLayout pageTitle="Requests" navbarExtra={<GeneratorFilters />}>
       <div className="p-6">
-        <Row gutter={16} className="mb-6">
-          <Col span={12}>
-            <Card>
-              <Statistic title="Total Requests" value={totalCount} />
-            </Card>
-          </Col>
-          <Col span={12}>
-            <Card>
-              <Statistic
-                title="Planned"
-                value={plannedCount}
-                styles={{
-                  content: { color: "#3b82f6" }
-                }}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        <Card title="All Requests">
-          <Table
-            dataSource={loadScheduledDays}
-            columns={columns}
-            pagination={false}
-            onRow={(record) => ({
-              onClick: () => handleRowClick(record),
-              className: "cursor-pointer"
-            })}
-            locale={{ emptyText: "No requests found" }}
-          />
-        </Card>
+        {!hasSelection ? (
+          <div
+            className="flex items-center justify-center"
+            style={{ minHeight: "calc(100vh - 200px)" }}
+          >
+            <Empty
+              image={
+                <FilterOutlined
+                  style={{ fontSize: 64, color: "#d1d5db" }}
+                />
+              }
+              description={
+                <div className="text-center">
+                  <p className="text-lg font-medium mb-1">
+                    {!parkId
+                      ? "Select a Park to get started"
+                      : "Now select a Factory"}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    {!parkId
+                      ? "Choose a park from the dropdown above to view its factories and plans."
+                      : "Pick a factory from the dropdown to view its calendar and daily plans."}
+                  </p>
+                </div>
+              }
+            />
+          </div>
+        ) : (
+          <Tabs defaultActiveKey="calendar" items={tabItems} />
+        )}
       </div>
 
-      <RequestDetailsSheet
-        request={selectedRequest}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+      <GeneratorDayViewModal
+        loadScheduleDay={selectedLoadScheduleDay}
+        open={isDayViewOpen}
+        onOpenChange={setIsDayViewOpen}
       />
     </RootLayout>
   );

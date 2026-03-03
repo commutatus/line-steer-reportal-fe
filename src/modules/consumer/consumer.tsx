@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
-import CalendarPlan from "./components/CalendarPlan";
-import TablePlan from "./components/TablePlan";
+import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
@@ -16,7 +15,7 @@ const presentDate = dayjs();
 
 const Consumer = () => {
   const router = useRouter();
-  const plantId = (router.query.plantId as string) || "1";
+  const plantId = typeof router.query.plantId === "string" ? router.query.plantId : "1";
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
@@ -101,7 +100,6 @@ const Consumer = () => {
       label: "Calendar",
       children: (
         <CalendarPlan
-          plantId={plantId}
           loadScheduledDays={loadScheduledDays}
           onDayClick={handleDayClick}
           currentDate={currentDate}
@@ -115,7 +113,6 @@ const Consumer = () => {
       label: "Table",
       children: (
         <TablePlan
-          plantId={plantId}
           loadScheduledDays={loadScheduledDays}
           onDayClick={handleDayClick}
         />

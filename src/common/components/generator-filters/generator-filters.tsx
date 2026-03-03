@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 interface GeneratorFiltersForm {
-  plantId: string | null;
+  factoryId: string | null;
   parkId: string | null;
 }
 
@@ -15,7 +15,7 @@ const GeneratorFilters = () => {
   const { data: contractsData } = useQuery<GetContractsQuery, GetContractsQueryVariables>(GET_CONTRACTS);
   const contracts = useMemo(() => contractsData?.contracts?.data ?? [], [contractsData]);
   const parkId = Form.useWatch("parkId", form);
-  const plantId = Form.useWatch("plantId", form);
+  const factoryId = Form.useWatch("factoryId", form);
   const router = useRouter();
   const isSyncingFromUrl = useRef(false);
 
@@ -31,7 +31,7 @@ const GeneratorFilters = () => {
     }, []);
   }, [contracts]);
 
-  const plants = useMemo(() => {
+  const factories = useMemo(() => {
     const seen = new Set<string>();
     return contracts
       .filter(contract => contract.park?.id === parkId)
@@ -48,10 +48,10 @@ const GeneratorFilters = () => {
   // Sync form values from URL query params on mount / URL change
   useEffect(() => {
     const queryParkId = typeof router.query.parkId === "string" ? router.query.parkId : null;
-    const queryPlantId = typeof router.query.plantId === "string" ? router.query.plantId : null;
+    const queryFactoryId = typeof router.query.factoryId === "string" ? router.query.factoryId : null;
     isSyncingFromUrl.current = true;
-    form.setFieldsValue({ plantId: queryPlantId, parkId: queryParkId });
-  }, [router.query.plantId, router.query.parkId, form]);
+    form.setFieldsValue({ factoryId: queryFactoryId, parkId: queryParkId });
+  }, [router.query.factoryId, router.query.parkId, form]);
 
   // Sync URL query params from form values
   useEffect(() => {
@@ -61,10 +61,10 @@ const GeneratorFilters = () => {
     }
 
     const url = new URL(window.location.href);
-    if (plantId) {
-      url.searchParams.set("plantId", plantId);
+    if (factoryId) {
+      url.searchParams.set("factoryId", factoryId);
     } else {
-      url.searchParams.delete("plantId");
+      url.searchParams.delete("factoryId");
     }
     if (parkId) {
       url.searchParams.set("parkId", parkId);
@@ -72,10 +72,10 @@ const GeneratorFilters = () => {
       url.searchParams.delete("parkId");
     }
     router.replace(url.pathname + url.search);
-  }, [plantId, parkId, router]);
+  }, [factoryId, parkId, router]);
 
   const handleParkChange = useCallback(() => {
-    form.setFieldValue("plantId", null);
+    form.setFieldValue("factoryId", null);
   }, [form]);
 
   return (
@@ -83,8 +83,8 @@ const GeneratorFilters = () => {
       <Form.Item name="parkId" label="Park" className="mb-0!">
         <Select placeholder="Select a Park" options={parks} allowClear onChange={handleParkChange} />
       </Form.Item>
-      <Form.Item name="plantId" label="Plant" dependencies={["parkId"]} className="mb-0!">
-        <Select placeholder="Select a Plant" options={plants} allowClear disabled={!parkId} />
+      <Form.Item name="factoryId" label="Factory" dependencies={["parkId"]} className="mb-0!">
+        <Select placeholder="Select a Factory" options={factories} allowClear disabled={!parkId} />
       </Form.Item>
     </Form>
   );

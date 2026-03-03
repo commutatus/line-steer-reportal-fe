@@ -4,14 +4,13 @@ import dayjs from "dayjs";
 import styles from "./calendar-plan.module.scss";
 import classNames from "classnames/bind";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { fillConfig } from "@/modules/consumer/consumer-utils";
-import { LoadScheduleDay } from "@/modules/consumer/consumer.types";
+import { fillConfig } from "@/common/constants/plan-status";
+import { LoadScheduleDay } from "@/common/types/load-schedule";
 import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 const cx = classNames.bind(styles);
 
 interface CalendarPlanProps {
-  plantId: string;
   loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
   currentDate: dayjs.Dayjs;
@@ -30,8 +29,8 @@ const CalendarPlan = (props: CalendarPlanProps) => {
 
   const dateCellRender = (date: Dayjs) => {
     const status = getStatusForDate(date);
-    const isCurrentMonth = date.month() === dayjs().month();
-    if (!isCurrentMonth) return null;
+    const isSelectedMonth = date.month() === currentDate.month();
+    if (!isSelectedMonth) return null;
 
     const config = fillConfig[status];
     return (
@@ -81,8 +80,8 @@ const CalendarPlan = (props: CalendarPlanProps) => {
           cellRender={(date, info) => {
             if (info.type === "date") {
               const status = getStatusForDate(date);
-              const isCurrentMonth = date.month() === dayjs().month();
-              const bgClass = isCurrentMonth ? fillConfig[status].bgClass : "";
+              const isSelectedMonth = date.month() === currentDate.month();
+              const bgClass = isSelectedMonth ? fillConfig[status].bgClass : "";
               return (
                 <div className={`absolute inset-0 ${bgClass}`}>{dateCellRender(date)}</div>
               );

@@ -1,0 +1,183 @@
+import { useMemo } from "react";
+import { Modal, Table, Tabs } from "antd";
+import ReactECharts from "echarts-for-react";
+import dayjs from "dayjs";
+import { LoadScheduleDay } from "@/common/types/load-schedule";
+import { convertToUTCHoursFormat } from "@/common/utils/helpers";
+
+interface GeneratorDayViewModalProps {
+  loadScheduleDay: LoadScheduleDay | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+interface HourRow {
+  key: number;
+  hour: string;
+  q0: string;
+  q1: string;
+  q2: string;
+  q3: string;
+}
+
+const GeneratorDayViewModal = ({
+  loadScheduleDay,
+  open,
+  onOpenChange,
+}: GeneratorDayViewModalProps) => {
+  const schedules = loadScheduleDay?.loadSchedules;
+
+  const formattedDate = useMemo(() => {
+    if (!loadScheduleDay?.date) {
+      return "";
+    }
+    return dayjs(loadScheduleDay.date).format("dddd, MMMM D, YYYY");
+  }, [loadScheduleDay?.date]);
+
+  const dataSource: HourRow[] = useMemo(() => {
+    if (!schedules) {
+      return [];
+    }
+    return Array.from({ length: 24 }, (_, h) => {
+      const base = h * 4;
+      return {
+        key: h,
+        hour: `${h.toString().padStart(2, "0")}:00`,
+        q0: schedules[base]?.load?.toFixed(2) ?? "—",
+        q1: schedules[base + 1]?.load?.toFixed(2) ?? "—",
+        q2: schedules[base + 2]?.load?.toFixed(2) ?? "—",
+        q3: schedules[base + 3]?.load?.toFixed(2) ?? "—",
+      };
+    });
+  }, [schedules]);
+
+  const columns = [
+    {
+      title: "Hour",
+      dataIndex: "hour",
+      key: "hour",
+      width: 80,
+      fixed: "left" as const,
+      render: (v: string) => (
+        <span className="font-mono text-sm font-medium">{v}</span>
+      ),
+    },
+    ...[0, 1, 2, 3].map((q) => ({
+      title: `:${(q * 15).toString().padStart(2, "0")}`,
+      dataIndex: `q${q}`,
+      key: `q${q}`,
+      width: 100,
+      align: "right" as const,
+      render: (v: string) => <span className="font-mono text-sm">{v}</span>,
+    })),
+  ];
+
+  const chartOption = useMemo(() => {
+    if (!schedules) {
+      return {};
+    }
+
+    const labels = schedules.map((s) => convertToUTCHoursFormat(s.startTime ?? ""));
+    const loadValues = schedules.map((s) => s.load ?? 0);
+    const avgValues = schedules.map((s) => s.pastAverageLoad ?? 0);
+    const hasAverageData = avgValues.some((v) => v > 0);
+
+    return {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "cross" },
+      },
+      legend: {
+        data: hasAverageData ? ["Selected Day", "Average"] : ["Selected Day"],
+        bottom: 0,
+      },
+      grid: {
+        left: 50,
+        right: 20,
+        top: 20,
+        bottom: 40,
+      },
+      xAxis: {
+        type: "category",
+        data: labels,
+        axisLabel: {
+          interval: 7,
+          rotate: 45,
+          fontSize: 10,
+        },
+      },
+      yAxis: {
+        type: "value",
+        name: "MW",
+        axisLabel: { fontSize: 10 },
+      },
+      series: [
+        {
+          name: "Selected Day",
+          type: "line",
+          data: loadValues,
+          smooth: true,
+          lineStyle: { width: 2 },
+          itemStyle: { color: "#3b82f6" },
+          areaStyle: { color: "rgba(59,130,246,0.1)" },
+        },
+        ...(hasAverageData
+          ? [
+              {
+                name: "Average",
+                type: "line",
+                data: avgValues,
+                smooth: true,
+                lineStyle: { width: 2, type: "dashed" as const },
+                itemStyle: { color: "#f59e0b" },
+              },
+            ]
+          : []),
+      ],
+    };
+  }, [schedules]);
+
+  const tabItems = [
+    {
+      key: "grid",
+      label: "Plan Grid",
+      children: (
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          pagination={false}
+          size="small"
+          bordered
+          scroll={{ y: 480 }}
+        />
+      ),
+    },
+    {
+      key: "chart",
+      label: "Comparison Chart",
+      children: (
+        <div style={{ height: 480 }}>
+          <ReactECharts
+            option={chartOption}
+            style={{ height: "100%", width: "100%" }}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <Modal
+      title={`Plan for ${formattedDate}`}
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      footer={null}
+      width={640}
+      destroyOnHidden
+    >
+      <Tabs defaultActiveKey="grid" items={tabItems} />
+    </Modal>
+  );
+};
+
+export default GeneratorDayViewModal;

@@ -1,12 +1,11 @@
 import dayjs from "dayjs";
 import { Table, Tag } from "antd";
-import { fillConfig } from "@/modules/consumer/consumer-utils";
+import { fillConfig } from "@/common/constants/plan-status";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { LoadScheduleDay } from "../consumer.types";
+import { LoadScheduleDay } from "@/common/types/load-schedule";
 import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 interface TablePlanProps {
-  plantId: string;
   loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
 }
