@@ -523,10 +523,12 @@ export type GetOverallPlanQueryVariables = Exact<{
 
 export type GetOverallPlanQuery = { __typename?: 'Query', loadSummary?: { __typename?: 'LoadSummaryPage', data: Array<{ __typename?: 'LoadSummary', date: any, totalFactoryLoad: number, totalParkLoad: number, parkLoads: Array<{ __typename?: 'ParkLoadEntry', totalLoad: number, park: { __typename?: 'Park', id: string, name?: string | null } }>, factoryLoads: Array<{ __typename?: 'FactoryLoadEntry', totalLoad: number, factory: { __typename?: 'Factory', id: string, name?: string | null } }> }> } | null };
 
-export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+export type ExportScheduleDetailsMutationVariables = Exact<{
+  input: ExportScheduleDetailsInput;
+}>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', email: string, firstName?: string | null, fullName?: string | null, id: string, lastName?: string | null, consumer?: { __typename?: 'Consumer', createdAt: any, id: string, name?: string | null } | null, generator?: { __typename?: 'Generator', createdAt: any, id: string, name?: string | null } | null } | null };
+export type ExportScheduleDetailsMutation = { __typename?: 'Mutation', exportScheduleDetails?: boolean | null };
 
 export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
   input: BulkUpdateInput;
@@ -534,3 +536,8 @@ export type BulkUpdateLoadSchedulesMutationVariables = Exact<{
 
 
 export type BulkUpdateLoadSchedulesMutation = { __typename?: 'Mutation', bulkUpdateLoadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, load?: number | null, pastAverageLoad?: number | null, startTime?: any | null, endTime?: any | null, loadScheduleDay?: { __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null } | null }> | null };
+
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', email: string, firstName?: string | null, fullName?: string | null, id: string, lastName?: string | null, consumer?: { __typename?: 'Consumer', createdAt: any, id: string, name?: string | null } | null, generator?: { __typename?: 'Generator', createdAt: any, id: string, name?: string | null } | null } | null };

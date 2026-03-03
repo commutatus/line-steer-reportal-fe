@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
 import PlanConfirmModal from "./PlanConfirmModal";
+import ExportScheduleButton from "./ExportScheduleButton";
+import { BULK_UPDATE_LOAD_SCHEDULES_MUTATION } from "@/common/graphql/consumer.graphql";
 
 interface DayPlanSheetProps {
   date: string | null;
@@ -26,23 +28,6 @@ const generateTimeSlots = (): TimeSlot[] => {
   return slots;
 };
 
-const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
-  mutation BulkUpdateLoadSchedules($input: BulkUpdateInput!) {
-    bulkUpdateLoadSchedules(input: $input) {
-      id
-      load
-      pastAverageLoad
-      startTime
-      endTime
-      loadScheduleDay {
-        date
-        id
-        status
-      }
-    }
-  }
-`;
-
 interface HourRow {
   key: number;
   hour: string;
@@ -61,7 +46,6 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
   const [bulkUpdateLoadSchedules, { 
     loading: bulkUpdateLoadSchedulesLoading,
   }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(BULK_UPDATE_LOAD_SCHEDULES_MUTATION);
-
   useEffect(() => {
     if (date) {
       setTimeSlots(initialData || generateTimeSlots());
@@ -175,7 +159,12 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
   return (
     <>
       <Drawer
-        title={`Plan for ${formattedDate}`}
+        title={(
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-medium">Plan for {formattedDate}</span>
+            <ExportScheduleButton date={{ from: date ?? "", to: date ?? "" }} />
+          </div>
+        )}
         open={open}
         onClose={() => onOpenChange(false)}
         size={540}

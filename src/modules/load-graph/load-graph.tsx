@@ -8,6 +8,7 @@ import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortC
 import { OVERALL_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 import { useGlobals } from "@/common/context/globals";
 import { UserType } from "@/common/hooks/useCurrentUser";
+import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
 
 const presentDate = dayjs();
 
@@ -25,6 +26,10 @@ type ChartSeries = {
 }
 
 const LoadGraph = () => {
+  const dateRange = {
+    from: presentDate.subtract(7, 'day').format("YYYY-MM-DD"),
+    to: presentDate.format("YYYY-MM-DD"),
+  };
   const { data, loading: isLoadGraphLoading } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
     variables: {
       sort: {
@@ -32,10 +37,7 @@ const LoadGraph = () => {
         direction: SortDirection.Asc,
       },
       filters: {
-        dateRange: {
-          from: presentDate.subtract(7, 'day').format("YYYY-MM-DD"),
-          to: presentDate.format("YYYY-MM-DD"),
-        }
+        dateRange,
       }
     }
   });
@@ -179,8 +181,10 @@ const LoadGraph = () => {
       <div className="p-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
           <div className="p-6 border-b border-slate-200">
-            <h2 className="text-xl font-semibold mb-6">Load Graph</h2>
-            
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold mb-6">Load Graph</h2>
+              <ExportScheduleButton date={dateRange} />
+            </div>
             <div className="flex items-center gap-6 flex-wrap">
               <span className="text-sm font-medium text-slate-700">Show {facilityTitle}:</span>
               {availableFacilities.map((facility, index) => (

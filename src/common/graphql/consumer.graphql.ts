@@ -86,3 +86,26 @@ export const OVERALL_PLAN_QUERY = gql`
     }
   }
 `;
+
+export const EXPORT_SCHEDULE_DETAILS_MUTATION = gql`
+  mutation ExportScheduleDetails($input: ExportScheduleDetailsInput!) {
+    exportScheduleDetails(input: $input)
+  }
+`;
+
+export const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
+  mutation BulkUpdateLoadSchedules($input: BulkUpdateInput!) {
+    bulkUpdateLoadSchedules(input: $input) {
+      id
+      load
+      pastAverageLoad
+      startTime
+      endTime
+      loadScheduleDay {
+        date
+        id
+        status
+      }
+    }
+  }
+`;

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Spin, Tabs, message } from "antd";
+import { Empty, Spin, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import DayPlanSheet from "./components/DayPlanSheet";
@@ -7,21 +7,22 @@ import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
-import { useRouter } from "next/router";
 import dayjs from "dayjs";
+import { useGlobals } from "@/common/context/globals";
 import ParkSelector from "@/common/components/park-selector";
+import { FilterOutlined } from "@ant-design/icons";
 
 const presentDate = dayjs();
 
 const Consumer = () => {
-  const router = useRouter();
-  const parkId = typeof router.query.parkId === "string" ? router.query.parkId : "1";
+  const { currentPark } = useGlobals();
+  const { parkId, contractId } = currentPark ?? {};
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
-        parkIds: [parkId],
+        parkIds: parkId ? [parkId] : undefined,
         dateRange: {
           from: currentDate.startOf("month").format("YYYY-MM-DD"),
           to: currentDate.endOf("month").format("YYYY-MM-DD"),
@@ -32,7 +33,7 @@ const Consumer = () => {
         direction: SortDirection.Asc,
       },
     },
-    skip: !parkId,
+    skip: !parkId || !contractId,
   });
   const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
@@ -123,7 +124,29 @@ const Consumer = () => {
   return (
     <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
       <div className="p-6">
-        <Tabs items={tabItems} />
+        {!parkId ? (
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <Empty
+              image={
+                <FilterOutlined
+                  className="text-gray-300! text-[64px]"
+                />
+              }
+              description={
+                <div className="text-center">
+                  <p className="text-lg font-medium mb-1">
+                    Select a Park to get started
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    Choose a park from the dropdown above to view its calendar and daily plans.
+                  </p>
+                </div>
+              }
+            />
+          </div>
+        ) : (
+          <Tabs items={tabItems} />
+        )}
       </div>
 
       <DayPlanSheet

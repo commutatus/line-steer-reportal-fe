@@ -9,6 +9,7 @@ import { useQuery } from "@apollo/client";
 import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 import { useGlobals } from "@/common/context/globals";
 import { UserType } from "@/common/hooks/useCurrentUser";
+import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
 
 const presentDate = dayjs();
 
@@ -17,13 +18,15 @@ const DayWisePlan = () => {
   const { userType } = currentUser ?? {};
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");
 
+  const dateRange = {
+    from: presentDate.startOf("month").format("YYYY-MM-DD"),
+    to: presentDate.endOf("month").format("YYYY-MM-DD"),
+  };
+
   const { data, loading: isDayWisePlanLoading } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY, {
     variables: {
       filters: {
-        dateRange: {
-          from: presentDate.startOf("month").format("YYYY-MM-DD"),
-          to: presentDate.endOf("month").format("YYYY-MM-DD"),
-        }
+        dateRange,
       },
       sort: {
         column: LoadScheduleDaySortColumn.Date,
@@ -99,14 +102,17 @@ const DayWisePlan = () => {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
           <div className="p-6 border-b border-slate-200 flex justify-between items-center">
             <h2 className="text-xl font-semibold">Day Wise Plan Report</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">Filter by Status:</span>
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                options={statusOptions}
-                className="w-[150px]!"
-              />
+            <div className="flex gap-x-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">Filter by Status:</span>
+                <Select
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={statusOptions}
+                  className="w-[150px]!"
+                />
+              </div>
+              <ExportScheduleButton date={dateRange} />
             </div>
           </div>
           <div className="p-6">

@@ -8,6 +8,7 @@ import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortC
 import { OVERALL_PLAN_QUERY } from '@/common/graphql/consumer.graphql';
 import { useGlobals } from '@/common/context/globals';
 import { UserType } from '@/common/hooks/useCurrentUser';
+import ExportScheduleButton from '../consumer/components/ExportScheduleButton';
 
 const presentDate = dayjs();
 
@@ -19,6 +20,10 @@ interface TableRow {
 }
 
 const OverallPlan = () => {
+  const dateRange = {
+    from: presentDate.startOf('month').format("YYYY-MM-DD"),
+    to: presentDate.endOf('month').format("YYYY-MM-DD"),
+  };
   const { data, loading: isOverallPlanLoading } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
     variables: {
       sort: {
@@ -26,10 +31,7 @@ const OverallPlan = () => {
         direction: SortDirection.Asc,
       },
       filters: {
-        dateRange: {
-          from: presentDate.startOf('month').format("YYYY-MM-DD"),
-          to: presentDate.endOf('month').format("YYYY-MM-DD"),
-        }
+        dateRange,
       }
     }
   });
@@ -136,8 +138,9 @@ const OverallPlan = () => {
     <RootLayout pageTitle="Overall Plan">
       <div className="p-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="p-6 border-b border-slate-200">
+          <div className="p-6 border-b border-slate-20 flex justify-between">
             <h2 className="text-xl font-semibold">Overall Plan Report</h2>
+            <ExportScheduleButton date={dateRange} />
           </div>
           <div className="p-6">
             <Table

@@ -6,10 +6,12 @@ import { notification } from "antd";
 import { AuthPageStates } from "@/modules/auth";
 import { NotificationInstance } from "antd/es/notification/interface";
 import useCurrentUser from "@/common/hooks/useCurrentUser";
+import useCurrentPark from "./useCurrentPark";
 
 type GlobalsContextType = Partial<{
   auth: ReturnType<typeof useAuth>;
   currentUser: ReturnType<typeof useCurrentUser>;
+  currentPark: ReturnType<typeof useCurrentPark>;
   notificationApi: NotificationInstance;
   isSidebarCollapsed: boolean;
   toggleSidebarCollapse: () => void;
@@ -41,6 +43,8 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
     authState: authContext.state,
   });
 
+  const currentPark = useCurrentPark();
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const toggleSidebarCollapse = () => {
@@ -57,6 +61,7 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
       auth: { ...authContext, logout: handleLogout },
       notificationApi,
       currentUser,
+      currentPark,
       isSidebarCollapsed,
       toggleSidebarCollapse,
       authPageState,
@@ -64,7 +69,7 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
       showLogin,
       showVerifyOtp,
     };
-  }, [authContext, notificationApi, currentUser, isSidebarCollapsed, authPageState, setAuthPageState, showLogin, showVerifyOtp, handleLogout]);
+  }, [authContext, notificationApi, currentUser, currentPark, isSidebarCollapsed, authPageState, setAuthPageState, showLogin, showVerifyOtp, handleLogout]);
 
   return (
     <GlobalsContext.Provider value={contextValue}>
