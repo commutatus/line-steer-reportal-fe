@@ -10,6 +10,7 @@ import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { useRouter } from "next/router";
 import dayjs from "dayjs";
+import PlantSelector from "@/common/components/plant-selector";
 
 const presentDate = dayjs();
 
@@ -86,7 +87,7 @@ const Consumer = () => {
 
   if (loadScheduledDaysLoading) {
     return (
-      <RootLayout pageTitle="Consumer">
+      <RootLayout pageTitle="Consumer" navbarExtra={<PlantSelector />}>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-lg">Loading...</div>
         </div>
@@ -123,7 +124,7 @@ const Consumer = () => {
   ];
 
   return (
-    <RootLayout pageTitle="Consumer">
+    <RootLayout pageTitle="Consumer" navbarExtra={<PlantSelector />}>
       <div className="p-6">
         <Tabs items={tabItems} />
       </div>

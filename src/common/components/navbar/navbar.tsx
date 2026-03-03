@@ -1,11 +1,9 @@
 import React from "react";
 import { Avatar, Button, Dropdown, Layout, Space } from "antd";
-
-const { Header } = Layout;
 import { useGlobals } from "@/common/context/globals";
 import { DownOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
-import PlantSelector from "../plant-selector";
-import { useRouter } from "next/router";
+
+const { Header } = Layout;
 
 const ProfileDropdown = () => {
   const { auth, currentUser } = useGlobals();
@@ -45,10 +43,14 @@ const ProfileDropdown = () => {
   );
 };
 
-const Navbar = ({ pageTitle, pageDescription }: { pageTitle?: string; pageDescription?: string }) => {
+interface NavbarProps {
+  pageTitle?: string;
+  pageDescription?: string;
+  navbarExtra?: React.ReactNode;
+}
+
+const Navbar = ({ pageTitle, pageDescription, navbarExtra }: NavbarProps) => {
   const { toggleSidebarCollapse, isSidebarCollapsed } = useGlobals();
-  const router = useRouter();
-  const isConsumerPage = router.pathname === "/consumer";
 
   return (
     <Header className="flex justify-between !leading-0 items-center sticky top-0 z-[1] !min-h-[40px] !px-[16px] !py-[8px] !bg-white border-solid border-0 border-b border-gray-3">
@@ -72,7 +74,7 @@ const Navbar = ({ pageTitle, pageDescription }: { pageTitle?: string; pageDescri
         )}
       </div>
       <div className="inline-flex items-center gap-[8px]">
-        {isConsumerPage && <PlantSelector />}
+        {navbarExtra}
         <ProfileDropdown />
       </div>
     </Header>

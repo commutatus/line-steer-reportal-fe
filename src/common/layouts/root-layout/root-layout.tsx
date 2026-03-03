@@ -10,6 +10,7 @@ type Props = {
   children?: React.ReactNode;
   pageTitle?: string;
   pageDescription?: string;
+  navbarExtra?: React.ReactNode;
   shouldShowNavbar?: boolean;
   shouldShowSidebar?: boolean;
 };
@@ -18,6 +19,7 @@ const RootLayout: React.FC<Props> = ({
   children,
   pageTitle,
   pageDescription,
+  navbarExtra,
   shouldShowNavbar = true,
   shouldShowSidebar = true,
 }) => {
@@ -32,7 +34,7 @@ const RootLayout: React.FC<Props> = ({
       </Head>
       {shouldShowSidebar && <Sidebar />}
       <Layout>
-        {shouldShowNavbar && <Navbar pageTitle={pageTitle} pageDescription={pageDescription} />}
+        {shouldShowNavbar && <Navbar pageTitle={pageTitle} pageDescription={pageDescription} navbarExtra={navbarExtra} />}
         <Content>{children}</Content>
       </Layout>
     </Layout>

@@ -11,6 +11,10 @@ export const GET_CONTRACTS = gql`
           name
           city
         }
+        factory {
+          id
+          name
+        }
       }
     }
   }

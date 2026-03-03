@@ -9,6 +9,7 @@ import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadSchedu
 import { fillConfig } from "../consumer/consumer-utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadSchedule } from "./generator.types";
+import GeneratorFilters from "@/common/components/generator-filters";
 
 const presentDate = dayjs();
 
@@ -87,7 +88,7 @@ const Generator = () => {
   ];
 
   return (
-    <RootLayout pageTitle="Requests" pageDescription="View and approve power consumption requests">
+    <RootLayout pageTitle="Requests" navbarExtra={<GeneratorFilters />}>
       <div className="p-6">
         <Row gutter={16} className="mb-6">
           <Col span={12}>

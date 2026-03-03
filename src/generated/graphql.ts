@@ -496,7 +496,7 @@ export type RefreshAccessTokenMutation = { __typename?: 'Mutation', refreshAcces
 export type GetContractsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetContractsQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', createdAt: any, id: string, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null }> } | null };
+export type GetContractsQuery = { __typename?: 'Query', contracts?: { __typename?: 'ContractPagingType', data: Array<{ __typename?: 'Contract', createdAt: any, id: string, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null }> } | null };
 
 export type GetLoadScheduleDaysQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
