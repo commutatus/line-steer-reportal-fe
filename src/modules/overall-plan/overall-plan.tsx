@@ -19,7 +19,7 @@ interface TableRow {
 }
 
 const OverallPlan = () => {
-  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
+  const { data, loading: isOverallPlanLoading } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
     variables: {
       sort: {
         column: LoadScheduleDaySortColumn.Date,
@@ -144,6 +144,7 @@ const OverallPlan = () => {
               dataSource={tableData}
               columns={columns}
               pagination={false}
+              loading={isOverallPlanLoading}
             />
             <div className="mt-4 text-sm text-slate-500">
               All values are in MWh (Megawatt-hours)

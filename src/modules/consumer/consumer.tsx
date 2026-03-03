@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Tabs, message } from "antd";
+import { Spin, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import DayPlanSheet from "./components/DayPlanSheet";
@@ -88,7 +88,7 @@ const Consumer = () => {
     return (
       <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
+          <Spin size="large" />
         </div>
       </RootLayout>
     );

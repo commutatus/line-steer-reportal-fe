@@ -17,7 +17,7 @@ const DayWisePlan = () => {
   const { userType } = currentUser ?? {};
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");
 
-  const { data } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY, {
+  const { data, loading: isDayWisePlanLoading } = useQuery<GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables>(DAY_WISE_PLAN_QUERY, {
     variables: {
       filters: {
         dateRange: {
@@ -113,6 +113,7 @@ const DayWisePlan = () => {
             <Table
               dataSource={tableData}
               columns={columns}
+              loading={isDayWisePlanLoading}
             />
           </div>
         </div>

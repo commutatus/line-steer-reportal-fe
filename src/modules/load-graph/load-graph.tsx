@@ -1,6 +1,6 @@
 import RootLayout from "@/common/layouts/root-layout";
 import { useState, useMemo, useEffect } from "react";
-import { Checkbox } from "antd";
+import { Checkbox, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
@@ -25,7 +25,7 @@ type ChartSeries = {
 }
 
 const LoadGraph = () => {
-  const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
+  const { data, loading: isLoadGraphLoading } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
     variables: {
       sort: {
         column: LoadScheduleDaySortColumn.Date,
@@ -163,6 +163,16 @@ const LoadGraph = () => {
   const handleFacilityToggle = (facilityId: string, checked: boolean) => {
     setVisibleFacilities((prev) => ({ ...prev, [facilityId]: checked }));
   };
+
+  if (isLoadGraphLoading) {
+    return (
+      <RootLayout pageTitle="Load Graph">
+        <div className="min-h-screen flex items-center justify-center">
+          <Spin size="large" />
+        </div>
+      </RootLayout>
+    )
+  }
 
   return (
     <RootLayout pageTitle="Load Graph">

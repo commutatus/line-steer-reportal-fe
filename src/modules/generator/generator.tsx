@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Empty, Tabs } from "antd";
+import { Empty, Spin, Tabs } from "antd";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -91,7 +91,7 @@ const Generator = () => {
     return (
       <RootLayout pageTitle="Requests" navbarExtra={<GeneratorFilters />}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
+          <Spin size="large" />
         </div>
       </RootLayout>
     );
