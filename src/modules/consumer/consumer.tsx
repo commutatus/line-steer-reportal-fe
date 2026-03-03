@@ -61,6 +61,18 @@ const Consumer = () => {
     }));
   }, [selectedDate, loadScheduledDays]);
 
+  const yesterdayTimeSlots = useMemo((): TimeSlot[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
+
+    return loadScheduleDay.loadSchedules.map((schedule) => ({
+      time: schedule.startTime || '',
+      mw: schedule.pastAverageLoad ?? null,
+      deviation: schedule.factory?.thresholdPercentage ?? null,
+    }));
+  }, [selectedDate, loadScheduledDays]);
+
   const loadScheduleIds = useMemo((): string[] | undefined => {
     if (!selectedDate) return undefined;
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
@@ -121,6 +133,7 @@ const Consumer = () => {
         onOpenChange={setIsDayPlanSheetOpen}
         onSave={handleSaveTimeSlots}
         initialData={initialTimeSlots}
+        yesterdayData={yesterdayTimeSlots}
         loadScheduleIds={loadScheduleIds}
         plantId={plantId}
       />

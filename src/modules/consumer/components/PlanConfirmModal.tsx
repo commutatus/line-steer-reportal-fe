@@ -11,7 +11,7 @@ interface PlanConfirmModalProps {
   date: string;
   currentSlots: TimeSlot[];
   previousSlots?: TimeSlot[];
-  yesterdaySlots?: TimeSlot[]; // TODO: Remove yesterdaySlots
+  yesterdaySlots?: TimeSlot[];
 }
 
 interface ChangeRow {
@@ -21,15 +21,14 @@ interface ChangeRow {
   newValue: number | null;
   yesterdayValue: number | null;
   deviatesFromYesterday: boolean;
+  deviation: number | null;
 }
 
-const DEVIATION_THRESHOLD = 0.15;
-
-const getDeviation = (newVal: number | null, yVal: number | null): boolean => {
-  if (newVal === null || yVal === null || yVal === 0) {
+const getDeviation = (newVal: number | null, yVal: number | null, deviation: number | null): boolean => {
+  if (newVal === null || yVal === null || yVal === 0 || deviation === null) {
     return false;
   }
-  return Math.abs((newVal - yVal) / yVal) > DEVIATION_THRESHOLD;
+  return Math.abs(((newVal - yVal) / yVal) * 100) > deviation;
 };
 
 const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
@@ -54,7 +53,8 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
           oldValue: oldVal,
           newValue: newVal,
           yesterdayValue: yVal,
-          deviatesFromYesterday: getDeviation(newVal, yVal),
+          deviatesFromYesterday: getDeviation(newVal, yVal, slot.deviation),
+          deviation: slot.deviation,
         });
       }
     });
@@ -149,7 +149,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
         const pct =
           ((record.newValue - record.yesterdayValue) / record.yesterdayValue) *
           100;
-        const isOver = Math.abs(pct) > 15;
+        const isOver = Math.abs(pct) > (record.deviation ?? 0);
         return (
           <Tag color={isOver ? "red" : "default"}>
             {pct > 0 ? "+" : ""}
@@ -170,7 +170,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     const markData: { coord: [number, number]; itemStyle: { color: string } }[] = [];
     if (yesterdaySlots) {
       currentSlots.forEach((slot, i) => {
-        if (getDeviation(slot.mw, yesterdaySlots[i]?.mw ?? null)) {
+        if (getDeviation(slot.mw, yesterdaySlots[i]?.mw ?? null, slot.deviation)) {
           markData.push({
             coord: [i, slot.mw ?? 0],
             itemStyle: { color: "#dc2626" },
@@ -239,8 +239,9 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
           if (
             yesterdaySlots &&
             getDeviation(
-              currentSlots[idx]?.mw,
+              currentSlots[idx]?.mw ?? null,
               yesterdaySlots[idx]?.mw ?? null,
+              currentSlots[idx]?.deviation ?? null,
             )
           ) {
             const yVal = yesterdaySlots[idx]?.mw ?? 0;
@@ -286,7 +287,16 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     });
   }, [date]);
 
-  const deviationCount = changes.filter((c) => c.deviatesFromYesterday).length;
+  const deviatingChanges = changes.filter((c) => c.deviatesFromYesterday);
+  const deviationCount = deviatingChanges.length;
+  const uniqueDeviationThresholds = [
+    ...new Set(deviatingChanges.map((c) => c.deviation).filter((d): d is number => d !== null)),
+  ].sort((a, b) => a - b);
+  const deviationThresholdLabel = uniqueDeviationThresholds.length === 1
+    ? `${uniqueDeviationThresholds[0]}%`
+    : uniqueDeviationThresholds.length > 1
+      ? `${uniqueDeviationThresholds[0]}-${uniqueDeviationThresholds[uniqueDeviationThresholds.length - 1]}%`
+      : null;
 
   return (
     <Modal
@@ -321,7 +331,7 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
             </Tag>
             {deviationCount > 0 && (
               <Tag color="red" className="ml-1">
-                {deviationCount} deviate{deviationCount !== 1 ? "" : "s"} &gt;15%
+                {deviationCount} deviate{deviationCount !== 1 ? "" : "s"} &gt;{deviationThresholdLabel}{" "}
                 from average
               </Tag>
             )}
