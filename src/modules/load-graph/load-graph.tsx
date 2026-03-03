@@ -13,6 +13,17 @@ const presentDate = dayjs();
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+type ChartSeries = {
+  name: string;
+  type: string;
+  data: number[];
+  smooth: boolean;
+  color: string;
+  lineStyle?: { type: string; width: number };
+  symbol: string;
+  symbolSize: number;
+}
+
 const LoadGraph = () => {
   const { data } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
     variables: {
@@ -58,53 +69,39 @@ const LoadGraph = () => {
     return Array.from(factoryMap, ([id, name]) => ({ id, name }));
   }, [loadSummary]);
 
-  const [visibleParks, setVisibleParks] = useState<Record<string, boolean>>({});
+  const availableFacilities = useMemo(() => userType === UserType.CONSUMER ? availableParks : availableFactories, [availableParks, availableFactories, userType]);
+  const facilityTitle = userType === UserType.CONSUMER ? "Parks" : "Factories";
+
+  const [visibleFacilities, setVisibleFacilities] = useState<Record<string, boolean>>({});
   const [showTotal, setShowTotal] = useState(true);
 
   useEffect(() => {
     const initialVisibility: Record<string, boolean> = {};
-    if (userType === UserType.CONSUMER) {
-      availableParks.forEach((park) => {
-        initialVisibility[park.id] = true;
-      });
-    } else {
-      availableFactories.forEach((factory) => {
-        initialVisibility[factory.id] = true;
-      });
-    }
-    setVisibleParks(initialVisibility);
-  }, [availableParks, availableFactories, userType]);
-
-  const plants = userType === UserType.CONSUMER ? availableParks : availableFactories;
+    availableFacilities.forEach((facility) => {
+      initialVisibility[facility.id] = true;
+    });
+    setVisibleFacilities(initialVisibility);
+  }, [availableFacilities]);
 
   const chartOption = useMemo(() => {
     const dates = loadSummary.map((item) => dayjs(item.date).format('MMM DD'));
 
-    const series: {
-      name: string;
-      type: string;
-      data: number[];
-      smooth: boolean;
-      color: string;
-      lineStyle?: { type: string; width: number };
-      symbol: string;
-      symbolSize: number;
-    }[] = [];
+    const series: ChartSeries[] = [];
 
-    plants.forEach((plant, index) => {
-      if (!visibleParks[plant.id]) return;
+    availableFacilities.forEach((facility, index) => {
+      if (!visibleFacilities[facility.id]) return;
       const color = CHART_COLORS[index % CHART_COLORS.length];
       const seriesData = loadSummary.map((item) => {
         if (userType === UserType.CONSUMER) {
-          const parkLoad = item.parkLoads?.find((p) => p.park?.id === plant.id);
+          const parkLoad = item.parkLoads?.find((p) => p.park?.id === facility.id);
           return parkLoad?.totalLoad ?? 0;
         }
-        const factoryLoad = item.factoryLoads?.find((f) => f.factory?.id === plant.id);
+        const factoryLoad = item.factoryLoads?.find((f) => f.factory?.id === facility.id);
         return factoryLoad?.totalLoad ?? 0;
       });
 
       series.push({
-        name: plant.name,
+        name: facility.name,
         type: 'line',
         data: seriesData,
         smooth: true,
@@ -161,10 +158,10 @@ const LoadGraph = () => {
       },
       series,
     };
-  }, [loadSummary, userType, plants, visibleParks, showTotal]);
+  }, [loadSummary, userType, availableFacilities, visibleFacilities, showTotal]);
 
-  const handleParkToggle = (parkId: string, checked: boolean) => {
-    setVisibleParks((prev) => ({ ...prev, [parkId]: checked }));
+  const handleFacilityToggle = (facilityId: string, checked: boolean) => {
+    setVisibleFacilities((prev) => ({ ...prev, [facilityId]: checked }));
   };
 
   return (
@@ -175,18 +172,18 @@ const LoadGraph = () => {
             <h2 className="text-xl font-semibold mb-6">Load Graph</h2>
             
             <div className="flex items-center gap-6 flex-wrap">
-              <span className="text-sm font-medium text-slate-700">Show Plants:</span>
-              {plants.map((plant, index) => (
+              <span className="text-sm font-medium text-slate-700">Show {facilityTitle}:</span>
+              {availableFacilities.map((facility, index) => (
                 <Checkbox
-                  key={plant.id}
-                  checked={visibleParks[plant.id] ?? true}
-                  onChange={(e) => handleParkToggle(plant.id, e.target.checked)}
+                  key={facility.id}
+                  checked={visibleFacilities[facility.id] ?? true}
+                  onChange={(e) => handleFacilityToggle(facility.id, e.target.checked)}
                 >
                   <span 
                     className="font-medium" 
                     style={{ color: CHART_COLORS[index % CHART_COLORS.length] }}
                   >
-                    {plant.name}
+                    {facility.name}
                   </span>
                 </Checkbox>
               ))}
