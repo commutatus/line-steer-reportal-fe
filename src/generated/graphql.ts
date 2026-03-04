@@ -569,7 +569,7 @@ export type GetContractLogsQueryVariables = Exact<{
 }>;
 
 
-export type GetContractLogsQuery = { __typename?: 'Query', contractLogs?: { __typename?: 'ContractLogsPage', logs: Array<{ __typename?: 'ContractLogEntry', changes: Array<any>, date?: any | null, email?: string | null, fullName?: string | null, timeOfChange: any }> } | null };
+export type GetContractLogsQuery = { __typename?: 'Query', contractLogs?: { __typename?: 'ContractLogsPage', logs: Array<{ __typename?: 'ContractLogEntry', changes: Array<any>, date?: any | null, email?: string | null, fullName?: string | null, timeOfChange: any }>, paging: { __typename?: 'PagingType', currentPage?: number | null, totalCount?: number | null, totalPages?: number | null } } | null };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 

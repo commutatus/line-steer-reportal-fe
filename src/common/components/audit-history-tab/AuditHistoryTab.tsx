@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Timeline, Typography, Button, Tag } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Spin, Timeline, Typography, Button, Tag } from 'antd';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { ClockCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { useQuery } from '@apollo/client';
 import { GET_CONTRACT_LOGS } from '@/common/graphql/consumer.graphql';
@@ -8,6 +9,7 @@ import { GetContractLogsQuery, GetContractLogsQueryVariables } from '@/generated
 import { convertToUTCHoursFormat } from '@/common/utils/helpers';
 import PageLoader from '@/common/components-ui/page-loader/page-loader';
 import dayjs from 'dayjs';
+import { CONTRACT_LOGS_PAGE_SIZE } from '@/common/constants/global';
 
 const { Text } = Typography;
 
@@ -62,13 +64,34 @@ const ChangesList: React.FC<{ changes: AuditChange[] }> = ({ changes }) => {
 const AuditHistoryTab = () => {
   const { currentPark } = useGlobals();
   const { contractId } = currentPark ?? {};
-  const { data, loading: isContractLogsLoading } = useQuery<GetContractLogsQuery, GetContractLogsQueryVariables>(GET_CONTRACT_LOGS, {
-    variables: {
-      contractId: contractId ?? '',
+
+  const contractLogsVariables = useMemo(() => ({
+    contractId: contractId ?? '',
+    pagination: {
+      pageNo: 1,
+      perPage: CONTRACT_LOGS_PAGE_SIZE,
     },
+  }), [contractId]);
+  const { data, loading: isContractLogsLoading, fetchMore } = useQuery<GetContractLogsQuery, GetContractLogsQueryVariables>(GET_CONTRACT_LOGS, {
+    variables: contractLogsVariables,
     skip: !contractId,
   })
   const contractLogs = data?.contractLogs?.logs ?? [];
+  const currentPage = data?.contractLogs?.paging?.currentPage ?? 0;
+  const totalPages = data?.contractLogs?.paging?.totalPages ?? 0;
+  const hasMore = currentPage < totalPages;
+
+  const handleLoadMore = () => {
+    fetchMore({
+      variables: {
+        ...contractLogsVariables,
+        pagination: {
+          ...contractLogsVariables.pagination,
+          pageNo: currentPage + 1,
+        },
+      },
+    });
+  };
 
   const timelineItems = contractLogs.map((entry, index) => {
     const timeStr = dayjs(entry.timeOfChange).format('DD MMM YYYY hh:mm A');
@@ -116,8 +139,19 @@ const AuditHistoryTab = () => {
   }
 
   return (
-    <div className="py-4 max-w-2xl">
-      <Timeline items={timelineItems} />
+    <div className="py-4">
+      <InfiniteScroll
+        dataLength={contractLogs.length}
+        next={handleLoadMore}
+        hasMore={hasMore}
+        loader={
+          <div className="flex justify-center py-4">
+            <Spin />
+          </div>
+        }
+      >
+        <Timeline items={timelineItems} />
+      </InfiniteScroll>
     </div>
   );
 };

@@ -121,6 +121,11 @@ export const GET_CONTRACT_LOGS = gql`
         fullName
         timeOfChange
       }
+      paging {
+        currentPage
+        totalCount
+        totalPages
+      }
     }
   }
 `;

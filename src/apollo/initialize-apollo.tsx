@@ -25,6 +25,7 @@ import {
   TOKEN_EXPIRED_SUB_CODES,
 } from "./apollo.constants";
 import { REFRESH_TOKEN_MUTATION } from "@/common/graphql/auth";
+import { CONTRACT_LOGS_PAGE_SIZE } from "@/common/constants/global";
 
 const apiLink = new HttpLink({
   uri: GRAPHQL_URL,
@@ -154,7 +155,35 @@ const errorLink = onError(({ networkError, graphQLErrors }) => {
 const createApolloClient = () => {
   return new ApolloClient({
     link: from([errorLink, authMiddleware(), apiLink]),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            contractLogs: {
+              keyArgs: ["contractId"],
+              merge(existing, incoming, extra) {
+                const { pageNo, perPage } = extra?.args?.pagination ?? {
+                  pageNo: 1,
+                  perPage: CONTRACT_LOGS_PAGE_SIZE,
+                };
+                
+                const prevLogs = existing ? existing.logs : [];
+                const offset = (pageNo - 1) * perPage;
+                const mergedLogs = prevLogs ? prevLogs.slice(0) : [];
+                const newLogs = incoming.logs ?? [];
+                for (let i = 0; i < newLogs.length; ++i) {
+                  mergedLogs[offset + i] = newLogs[i];
+                }
+                return {
+                  ...incoming,
+                  logs: mergedLogs,
+                };
+              },
+            },
+          },
+        },
+      },
+    }),
   });
 };
 
