@@ -2,6 +2,7 @@ import { GET_CONTRACTS } from "@/common/graphql/constants";
 import { GetContractsQuery, GetContractsQueryVariables } from "@/generated/graphql";
 import { useQuery } from "@apollo/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AuthStatesEnum } from "./useAuth";
 
 interface ParkOption {
   id: string;
@@ -14,14 +15,22 @@ interface FactoryOption {
   name: string | null;
 }
 
-const useCurrentPark = () => {
+interface UseCurrentParkProps {
+  authState: AuthStatesEnum;
+}
+
+const useCurrentPark = ({
+  authState,
+}: UseCurrentParkProps) => {
   const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
   const [selectedFactoryId, setSelectedFactoryId] = useState<string | null>(null);
 
   const { data: contractsData, loading: contractsLoading } = useQuery<
     GetContractsQuery,
     GetContractsQueryVariables
-  >(GET_CONTRACTS);
+  >(GET_CONTRACTS, {
+    skip: authState !== AuthStatesEnum.loggedIn
+  });
 
   const contracts = useMemo(
     () => contractsData?.contracts?.data ?? [],

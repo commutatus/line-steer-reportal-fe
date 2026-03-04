@@ -43,7 +43,9 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
     authState: authContext.state,
   });
 
-  const currentPark = useCurrentPark();
+  const currentPark = useCurrentPark({
+    authState: authContext.state,
+  });
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
