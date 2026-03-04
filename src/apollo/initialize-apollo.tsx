@@ -135,7 +135,7 @@ const errorLink = onError(({ networkError, graphQLErrors }) => {
       const newTokens = response.data?.refreshAccessToken;
       if (newTokens) {
         const { accessToken, refreshToken } = newTokens;
-        updateAccessToken(accessToken);
+        updateAccessToken(accessToken ?? "");
         updateRefreshToken(refreshToken ?? "");
       } else {
         throw new Error("Failed to refresh tokens");

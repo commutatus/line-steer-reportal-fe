@@ -4,9 +4,9 @@ import { Button, Menu, MenuProps } from "antd";
 import classNames from "classnames/bind";
 import styles from "./sidebar.module.scss";
 import { useGlobals } from "@/common/context/globals";
-import useResponsive from "@/common/hooks/useResponsive";
+import useResponsive, { Breakpoints } from "@/common/hooks/useResponsive";
 import Link from "next/link";
-import { getMenuKeysFromPathname, MenuKeys } from "./sidebar.helpers";
+import { getMenuKeysFromPathname, MenuKeys, MENU_ROUTES } from "./sidebar.helpers";
 import { useRouter } from "next/router";
 import {
   CalendarOutlined,
@@ -14,7 +14,11 @@ import {
   DoubleLeftOutlined,
   FileTextOutlined,
   LineChartOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
+import Image from "next/image";
+import { UserType } from "@/common/hooks/useCurrentUser";
+
 const cx = classNames.bind(styles);
 
 const SideBarHeader = (sidebarProps: {
@@ -32,27 +36,23 @@ const SideBarHeader = (sidebarProps: {
         },
       )}
     >
-      <div className="inline-flex items-center transition-all duration-300 overflow-hidden">
+      <div className="inline-flex items-center transition-all duration-300 overflow-hidden mx-auto">
         {isSidebarCollapsed && (
-          // TODO: Add brand logo
-          // <Image
-          //   src="/assets/images/"
-          //   alt="Logo"
-          //   width={24}
-          //   height={24}
-          // />
-          <h1>LSR</h1>
+          <Image
+            src="/assets/images/reportal-logo-short.png"
+            alt="Logo"
+            width={30}
+            height={30}
+          />
         )}
 
         {!isSidebarCollapsed && (
-          // TODO: Add brand logo
-          // <Image
-          //   src="/assets/images/sb_cheil_2025_logos.png"
-          //   alt="Logo"
-          //   width={100}
-          //   height={40}
-          // />
-          <h1>Line Steer Reportal</h1>
+          <Image
+            src="/assets/images/reportal-logo.png"
+            alt="Logo"
+            width={130}
+            height={60}
+          />
         )}
       </div>
       {!isSidebarCollapsed && (
@@ -67,27 +67,32 @@ const SideBarHeader = (sidebarProps: {
 };
 
 const Sidebar = () => {
-  const { isSidebarCollapsed, toggleSidebarCollapse } = useGlobals();
-  const { isMobile } = useResponsive();
+  const { isSidebarCollapsed, toggleSidebarCollapse, currentUser } = useGlobals();
+  const { breakpoint } = useResponsive();
   const router = useRouter();
 
-  const isSmallScreen = isMobile;
+  const isSmallScreen = breakpoint <= Breakpoints.lg;
 
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
-    const planningHref = "/planning";
-    const dayWisePlanHref = "/reports/day-wise-plan";
-    const overallPlanHref = "/reports/overall-plan";
-    const loadGraphHref = "/reports/load-graph";
+    let firstItem = {
+      key: MenuKeys.PLANNING,
+      label: <Link href={MENU_ROUTES[MenuKeys.PLANNING]}>Planning</Link>,
+      icon: <CalendarOutlined />,
+    };
+
+    if (currentUser?.userType === UserType.GENERATOR) {
+      firstItem = {
+        key: MenuKeys.REQUESTS,
+        label: <Link href={MENU_ROUTES[MenuKeys.REQUESTS]}>Requests</Link>,
+        icon: <UnorderedListOutlined />,
+      };
+    }
 
     return [
-      {
-        key: MenuKeys.PLANNING,
-        label: <Link href={planningHref}>Planning</Link>,
-        icon: <CalendarOutlined />,
-      },
+      firstItem,
       {
         key: MenuKeys.REPORTS,
         label: "Reports",
@@ -95,23 +100,23 @@ const Sidebar = () => {
         children: [
           {
             key: MenuKeys.DAY_WISE_PLAN,
-            label: <Link href={dayWisePlanHref}>Day Wise Plan</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.DAY_WISE_PLAN]}>Day Wise Plan</Link>,
             icon: <CalendarOutlined />,
           },
           {
             key: MenuKeys.OVERALL_PLAN,
-            label: <Link href={overallPlanHref}>Overall Plan</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.OVERALL_PLAN]}>Overall Plan</Link>,
             icon: <FileTextOutlined />,
           },
           {
             key: MenuKeys.LOAD_GRAPH,
-            label: <Link href={loadGraphHref}>Load Graph</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.LOAD_GRAPH]}>Load Graph</Link>,
             icon: <LineChartOutlined />,
           },
         ],
       },
     ].filter((item) => item !== null);
-  }, []);
+  }, [currentUser?.userType]);
 
   useEffect(() => {
     const { selectedKey, openKey } = getMenuKeysFromPathname(router.pathname);

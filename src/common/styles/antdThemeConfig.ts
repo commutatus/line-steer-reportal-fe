@@ -4,7 +4,12 @@ import type { ThemeConfig } from "antd";
 const theme: ThemeConfig = {
   token: {
     fontSize: 16,
-    colorPrimary: "#52c41a",
+    colorPrimary: "#1a2744",
+  },
+  components: {
+    Button: {
+      colorTextDisabled: "rgba(255,255,255,0.7)",
+    },
   },
 };
 

@@ -1,0 +1,178 @@
+import { useMemo, useState } from "react";
+import { Empty, Modal, Tabs, message } from "antd";
+import RootLayout from "@/common/layouts/root-layout";
+import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
+import DayPlanSheet from "./components/DayPlanSheet";
+import { TimeSlot } from "@/common/utils/data/types";
+import { useQuery } from "@apollo/client";
+import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
+import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
+import dayjs from "dayjs";
+import { useGlobals } from "@/common/context/globals";
+import ParkSelector from "@/common/components/park-selector";
+import { FilterOutlined } from "@ant-design/icons";
+import { faBan } from "@awesome.me/kit-31481ff84e/icons/classic/regular";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PageLoader from "@/common/components-ui/page-loader/page-loader";
+
+const presentDate = dayjs();
+
+const Consumer = () => {
+  const { currentPark } = useGlobals();
+  const { parkId, contractId } = currentPark ?? {};
+  const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
+
+  const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
+    variables: {
+      filters: {
+        parkIds: parkId ? [parkId] : undefined,
+        dateRange: {
+          from: currentDate.startOf("month").format("YYYY-MM-DD"),
+          to: currentDate.endOf("month").format("YYYY-MM-DD"),
+        }
+      },
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
+    },
+    skip: !parkId || !contractId,
+  });
+  const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
+
+  const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const handleDayClick = (date: string) => {
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === date);
+    if (!loadScheduleDay?.loadSchedules?.length) {
+      const formattedDate = dayjs(date).format("MMMM D, YYYY");
+      Modal.info({
+        icon: <FontAwesomeIcon icon={faBan} className="text-red-500 text-2xl mr-2" />,
+        title: "Load Schedule Unavailable",
+        content: `Load schedule is not available for ${formattedDate}. Please try again sometime later.`,
+        okText: "Close",
+      });
+      return;
+    }
+    setSelectedDate(date);
+    setIsDayPlanSheetOpen(true);
+  };
+
+  const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
+    message.success(`Saved plan for ${date} with ${timeSlots.length} time slots`);
+    setIsDayPlanSheetOpen(false);
+  };
+
+  const initialTimeSlots = useMemo((): TimeSlot[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
+
+    return loadScheduleDay.loadSchedules.map((schedule) => ({
+      time: schedule.startTime || '',
+      mw: schedule.load ?? null,
+      deviation: schedule.factory?.thresholdPercentage ?? null,
+    }));
+  }, [selectedDate, loadScheduledDays]);
+
+  const averageTimeSlots = useMemo((): TimeSlot[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
+
+    return loadScheduleDay.loadSchedules.map((schedule) => ({
+      time: schedule.startTime || '',
+      mw: schedule.pastAverageLoad ?? null,
+      deviation: schedule.factory?.thresholdPercentage ?? null,
+    }));
+  }, [selectedDate, loadScheduledDays]);
+
+  const loadScheduleIds = useMemo((): string[] | undefined => {
+    if (!selectedDate) return undefined;
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
+    if (!loadScheduleDay?.loadSchedules) return undefined;
+    return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
+  }, [selectedDate, loadScheduledDays]);
+
+  const handleDateChange = (date: dayjs.Dayjs) => {
+    setCurrentDate(date);
+  };
+
+  if (loadScheduledDaysLoading) {
+    return (
+      <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+        <PageLoader />
+      </RootLayout>
+    );
+  }
+
+  const tabItems = [
+    {
+      key: "1",
+      label: "Calendar",
+      children: (
+        <CalendarPlan
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+          currentDate={currentDate}
+          onDateChange={handleDateChange}
+          description="Click on any day to view or edit the daily plan"
+        />
+      ),
+    },
+    {
+      key: "2",
+      label: "Table",
+      children: (
+        <TablePlan
+          loadScheduledDays={loadScheduledDays}
+          onDayClick={handleDayClick}
+          currentDate={currentDate}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+      <div className="p-6">
+        {!parkId ? (
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <Empty
+              image={
+                <FilterOutlined
+                  className="text-gray-300! text-[64px]"
+                />
+              }
+              description={
+                <div className="text-center">
+                  <p className="text-lg font-medium mb-1">
+                    Select a Park to get started
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    Choose a park from the dropdown above to view its calendar and daily plans.
+                  </p>
+                </div>
+              }
+            />
+          </div>
+        ) : (
+          <Tabs items={tabItems} />
+        )}
+      </div>
+
+      <DayPlanSheet
+        date={selectedDate}
+        open={isDayPlanSheetOpen}
+        onOpenChange={setIsDayPlanSheetOpen}
+        onSave={handleSaveTimeSlots}
+        initialData={initialTimeSlots}
+        averageData={averageTimeSlots}
+        loadScheduleIds={loadScheduleIds}
+      />
+    </RootLayout>
+  );
+};
+
+export default Consumer;

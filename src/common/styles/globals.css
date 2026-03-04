@@ -19,6 +19,14 @@
   --breakpoint-xl: 1440px;
   --breakpoint-2xl: 1536px;
   --color-gray-3: #f0f0f0;
+  --color-slate-200: hsl(214.3 31.8% 91.4%);
+  --color-slate-600: hsl(215.4 16.3% 46.9%);
+  --color-slate-900: hsl(222.2 47.4% 11.2%);
+
+  --color-gray-400: #9ca3af;
+  --color-amber-600: #d97706;
+  --color-green-600: #16a34a;
+  --color-red-500: #fb2c36;
 }
 
 body {
