@@ -8,7 +8,7 @@ import {
 } from "@/generated/graphql";
 import { useMutation } from "@apollo/client";
 import { Button, Form, Input, Typography } from "antd";
-import { ArrowLeftOutlined, LoadingOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 
 const { Text, Title } = Typography;
@@ -55,10 +55,9 @@ const VerifyOtp = (props: VerifyOtpProps) => {
 
   const handleOtpChange = (value: string) => {
     setOtpValue(value);
-    if (value.length === 6) {
-      handleVerifyOtp(value);
-    }
   };
+
+  const isOtpComplete = otpValue.length === 6;
 
   const handleVerifyOtp = (otp?: string) => {
     const otpToVerify = otp || otpValue;
@@ -157,11 +156,16 @@ const VerifyOtp = (props: VerifyOtpProps) => {
           inputMode="numeric"
         />
       </Form.Item>
-      {verifyingOtp && (
-        <span className="flex items-center gap-2 text-gray-500">
-          <LoadingOutlined spin /> Verifying...
-        </span>
-      )}
+      <Button
+        type="primary"
+        onClick={() => handleVerifyOtp()}
+        loading={verifyingOtp}
+        disabled={!isOtpComplete}
+        size="large"
+        block
+      >
+        Submit OTP
+      </Button>
       <div className="flex justify-center mt-2">
         {canResendOtp ? (
           <Button type="link" onClick={handleResendOtp} size="small">
