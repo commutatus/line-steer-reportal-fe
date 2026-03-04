@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
-import { useMutation } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client";
 import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
 import PlanConfirmModal from "./PlanConfirmModal";
 import ExportScheduleButton from "./ExportScheduleButton";
@@ -42,10 +42,12 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
     initialData || generateTimeSlots()
   );
-  const [showConfirm, setShowConfirm] = useState(false);
+  const client = useApolloClient();
   const [bulkUpdateLoadSchedules, { 
     loading: bulkUpdateLoadSchedulesLoading,
   }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(BULK_UPDATE_LOAD_SCHEDULES_MUTATION);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     if (date) {
       setTimeSlots(initialData || generateTimeSlots());
@@ -88,7 +90,8 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
           },
         },
       });
-
+      client.cache.evict({ fieldName: 'contractLogs' });
+      client.cache.gc();
       message.success(`Saved plan for ${date}`);
       onSave(date, timeSlots);
       setShowConfirm(false);

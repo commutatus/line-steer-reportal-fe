@@ -12,6 +12,7 @@ import DayViewModal from "@/common/components/day-view-modal";
 import { FilterOutlined } from "@ant-design/icons";
 import { useGlobals } from "@/common/context/globals";
 import PageLoader from "@/common/components-ui/page-loader/page-loader";
+import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 
 const presentDate = dayjs();
 
@@ -85,6 +86,11 @@ const Generator = () => {
           currentDate={currentDate}
         />
       ),
+    },
+    {
+      key: "3",
+      label: "History",
+      children: <AuditHistoryTab />,
     },
   ];
 

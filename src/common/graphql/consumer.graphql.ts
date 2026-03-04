@@ -110,3 +110,17 @@ export const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
     }
   }
 `;
+
+export const GET_CONTRACT_LOGS = gql`
+  query GetContractLogs($contractId: ID!, $pagination: PagingInput) {
+    contractLogs (contractId: $contractId, pagination: $pagination) {
+      logs {
+        changes
+        date
+        email
+        fullName
+        timeOfChange
+      }
+    }
+  }
+`;
