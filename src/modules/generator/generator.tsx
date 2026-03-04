@@ -8,10 +8,11 @@ import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadSchedu
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
 import GeneratorFilters from "@/common/components/generator-filters";
-import GeneratorDayViewModal from "./components/GeneratorDayViewModal";
+import DayViewModal from "@/common/components/day-view-modal";
 import { FilterOutlined } from "@ant-design/icons";
 import { useGlobals } from "@/common/context/globals";
 import PageLoader from "@/common/components-ui/page-loader/page-loader";
+import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 
 const presentDate = dayjs();
 
@@ -86,6 +87,11 @@ const Generator = () => {
         />
       ),
     },
+    {
+      key: "3",
+      label: "History",
+      children: <AuditHistoryTab />,
+    },
   ];
 
   if (loadScheduledDaysLoading) {
@@ -130,7 +136,7 @@ const Generator = () => {
         )}
       </div>
 
-      <GeneratorDayViewModal
+      <DayViewModal
         loadScheduleDay={selectedLoadScheduleDay}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}

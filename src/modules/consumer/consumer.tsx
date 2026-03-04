@@ -2,30 +2,34 @@ import { useMemo, useState } from "react";
 import { Empty, Modal, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
+import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 import DayPlanSheet from "./components/DayPlanSheet";
+import DayViewModal from "@/common/components/day-view-modal";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import dayjs from "dayjs";
 import { useGlobals } from "@/common/context/globals";
-import ParkSelector from "@/common/components/park-selector";
 import { FilterOutlined } from "@ant-design/icons";
 import { faBan } from "@awesome.me/kit-31481ff84e/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PageLoader from "@/common/components-ui/page-loader/page-loader";
+import GeneratorFilters from "@/common/components/generator-filters";
 
 const presentDate = dayjs();
 
 const Consumer = () => {
   const { currentPark } = useGlobals();
-  const { parkId, contractId } = currentPark ?? {};
+  const { parkId, factoryId } = currentPark ?? {};
+  const hasSelection = Boolean(parkId && factoryId);
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
         parkIds: parkId ? [parkId] : undefined,
+        factoryIds: factoryId ? [factoryId] : undefined,
         dateRange: {
           from: currentDate.startOf("month").format("YYYY-MM-DD"),
           to: currentDate.endOf("month").format("YYYY-MM-DD"),
@@ -36,11 +40,12 @@ const Consumer = () => {
         direction: SortDirection.Asc,
       },
     },
-    skip: !parkId || !contractId,
+    skip: !hasSelection,
   });
   const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
+  const [isDayViewModalOpen, setIsDayViewModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const handleDayClick = (date: string) => {
@@ -55,8 +60,13 @@ const Consumer = () => {
       });
       return;
     }
+    const isPastDate = dayjs(date).isBefore(dayjs());
     setSelectedDate(date);
-    setIsDayPlanSheetOpen(true);
+    if (isPastDate) {
+      setIsDayViewModalOpen(true);
+    } else {
+      setIsDayPlanSheetOpen(true);
+    }
   };
 
   const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
@@ -73,6 +83,8 @@ const Consumer = () => {
       time: schedule.startTime || '',
       mw: schedule.load ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
+      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 
@@ -85,6 +97,8 @@ const Consumer = () => {
       time: schedule.startTime || '',
       mw: schedule.pastAverageLoad ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
+      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 
@@ -95,13 +109,18 @@ const Consumer = () => {
     return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
   }, [selectedDate, loadScheduledDays]);
 
+  const selectedLoadScheduleDay = useMemo(() => {
+    if (!selectedDate) return null;
+    return loadScheduledDays.find((day) => day.date === selectedDate) ?? null;
+  }, [selectedDate, loadScheduledDays]);
+
   const handleDateChange = (date: dayjs.Dayjs) => {
     setCurrentDate(date);
   };
 
   if (loadScheduledDaysLoading) {
     return (
-      <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+      <RootLayout pageTitle="Consumer" navbarExtra={<GeneratorFilters />}>
         <PageLoader />
       </RootLayout>
     );
@@ -132,12 +151,17 @@ const Consumer = () => {
         />
       ),
     },
+    {
+      key: "3",
+      label: "History",
+      children: <AuditHistoryTab />,
+    },
   ];
 
   return (
-    <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+    <RootLayout pageTitle="Consumer" navbarExtra={<GeneratorFilters />}>
       <div className="p-6">
-        {!parkId ? (
+        {!hasSelection ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
             <Empty
               image={
@@ -148,10 +172,14 @@ const Consumer = () => {
               description={
                 <div className="text-center">
                   <p className="text-lg font-medium mb-1">
-                    Select a Park to get started
+                    {!parkId
+                      ? "Select a Park to get started"
+                      : "Now select a Factory"}
                   </p>
                   <p className="text-gray-500 text-sm">
-                    Choose a park from the dropdown above to view its calendar and daily plans.
+                    {!parkId
+                      ? "Choose a park from the dropdown above to view its factories and plans."
+                      : "Pick a factory from the dropdown to view its calendar and daily plans."}
                   </p>
                 </div>
               }
@@ -161,6 +189,12 @@ const Consumer = () => {
           <Tabs items={tabItems} />
         )}
       </div>
+
+      <DayViewModal
+        loadScheduleDay={selectedLoadScheduleDay}
+        open={isDayViewModalOpen}
+        onOpenChange={setIsDayViewModalOpen}
+      />
 
       <DayPlanSheet
         date={selectedDate}

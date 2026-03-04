@@ -9,6 +9,7 @@ interface TablePlanProps {
   onDayClick?: (date: string) => void;
   currentDate: Dayjs;
 }
+const presentDate = dayjs();
 
 const TablePlan = (props: TablePlanProps) => {
   const { loadScheduledDays, onDayClick, currentDate } = props;
@@ -16,7 +17,11 @@ const TablePlan = (props: TablePlanProps) => {
     const totalMW = loadScheduledDay.loadSchedules?.reduce((sum, schedule) => sum + (schedule.load || 0), 0) || 0;
     const dayjsDate = dayjs(loadScheduledDay.date);
 
-    const fillStatus = loadScheduledDay.status ?? PlanStatus.NotAvailable;
+    let fillStatus: PlanStatus = loadScheduledDay.status ?? PlanStatus.NotAvailable;
+    if (dayjsDate.isBefore(presentDate)) {
+      fillStatus = PlanStatus.PastDay;
+    }
+
     return {
       key: loadScheduledDay.id,
       date: loadScheduledDay.date,

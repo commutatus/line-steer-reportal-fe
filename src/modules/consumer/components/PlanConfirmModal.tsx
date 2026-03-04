@@ -1,9 +1,17 @@
 import React, { useMemo } from "react";
-import { Modal, Table, Tag } from "antd";
+import { Alert, Modal, Table, Tag } from "antd";
+import { WarningOutlined } from "@ant-design/icons";
+import classNames from "classnames";
 import ReactECharts from "echarts-for-react";
 import { TimeSlot } from "@/common/utils/data/types";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
-import classNames from "classnames";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
+
 
 interface PlanConfirmModalProps {
   open: boolean;
@@ -161,6 +169,8 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     const averageValues = averageSlots
       ? averageSlots.map((s) => s.mw ?? 0)
       : [];
+    const limitValues = currentSlots.map((s) => s.maximumRequestLimit ?? 0);
+    const hasLimitData = limitValues.some((v) => v > 0);
 
     const markData: { coord: [number, number]; itemStyle: { color: string } }[] = [];
     if (averageSlots) {
@@ -179,9 +189,11 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       type: string;
       data: number[];
       smooth: boolean;
-      areaStyle: { opacity: number };
+      areaStyle?: { opacity: number };
       color: string;
       lineStyle?: { type: string; width: number };
+      symbol?: string | boolean;
+      symbolSize?: number;
       markPoint?: {
         symbol: string;
         symbolSize: number;
@@ -218,6 +230,18 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
         lineStyle: { type: "dashed", width: 2 },
         color: "#94a3b8",
         areaStyle: { opacity: 0.05 },
+      });
+    }
+
+    if (hasLimitData) {
+      series.push({
+        name: "Limit",
+        type: "line",
+        data: limitValues,
+        smooth: false,
+        lineStyle: { type: "dashed", width: 2 },
+        color: "#f59e0b",
+        symbol: "none",
       });
     }
 
@@ -282,6 +306,51 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     });
   }, [date]);
 
+  const escalationCutoffTime = currentSlots.find((s) => s.escalationCutoffTime)?.escalationCutoffTime ?? null;
+
+  const escalationCutoffDate = useMemo(() => {
+    if (!escalationCutoffTime || !date) {
+      return null;
+    }
+    const cutoffSource = dayjs(escalationCutoffTime).utc();
+    const cutoff = dayjs(date).utc().set("hour", cutoffSource.hour()).set("minute", cutoffSource.minute()).add(1, "day");
+    return cutoff;
+  }, [escalationCutoffTime, date]);
+
+  const cutoffTimeDisplay = useMemo(() => {
+    if (!escalationCutoffTime) {
+      return null;
+    }
+    return convertToUTCHoursFormat(escalationCutoffTime);
+  }, [escalationCutoffTime]);
+
+  const pastCutoffSlots = useMemo(() => {
+    if (!escalationCutoffDate || !date) {
+      return [];
+    }
+    return changes.filter((change) => {
+      const [hh, mm] = change.time.split(":").map(Number);
+      const slotDate = dayjs().utc().set("hour", hh).set("minute", mm).add(1, "day");
+      return slotDate.isAfter(escalationCutoffDate);
+    });
+  }, [changes, date, escalationCutoffDate]);
+
+  const overLimitSlots = useMemo(() => {
+    return currentSlots
+      .filter((slot) => {
+        if (slot.mw === null || slot.maximumRequestLimit === null) {
+          return false;
+        }
+        return slot.mw > slot.maximumRequestLimit;
+      })
+      .map((slot, i) => ({
+        index: i,
+        time: convertToUTCHoursFormat(slot.time),
+        mw: slot.mw,
+        limit: slot.maximumRequestLimit,
+      }));
+  }, [currentSlots]);
+
   const deviatingChanges = changes.filter((c) => c.deviatesFromAverage);
   const deviationCount = deviatingChanges.length;
   const uniqueDeviationThresholds = [
@@ -308,6 +377,41 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       centered
     >
       <div className="space-y-4">
+        {pastCutoffSlots.length > 0 && (
+          <Alert
+            title="Editing past the cutoff time"
+            description={
+              <div className="text-xs mt-1">
+                <p className="mb-2 text-sm">
+                  The following {pastCutoffSlots.length} slot{pastCutoffSlots.length !== 1 ? "s are" : " is"} past
+                  the cutoff time{cutoffTimeDisplay ? ` (${cutoffTimeDisplay})` : ""} — <strong>an escalation email will be sent</strong> upon submission.
+                </p>
+              </div>
+            }
+            type="error"
+            showIcon
+            icon={<WarningOutlined />}
+          />
+        )}
+
+        {overLimitSlots.length > 0 && (
+          <Alert
+            title={<h6 className="text-base!">{`${overLimitSlots.length} slot${overLimitSlots.length !== 1 ? "s" : ""} exceed the MW limit`}</h6>}
+            description={
+              <div className="mt-1">
+                {overLimitSlots.map((s) => (
+                  <Tag key={s.index} color="orange" className="mb-1">
+                    {s.time} — {s.mw?.toFixed(2)} MW (limit: {s.limit?.toFixed(2)} MW)
+                  </Tag>
+                ))}
+              </div>
+            }
+            type="warning"
+            showIcon
+            icon={<WarningOutlined />}
+          />
+        )}
+
         <div>
           <h4 className="text-sm font-medium mb-2!">
             Load Profile {averageSlots ? "(vs Average)" : ""}
