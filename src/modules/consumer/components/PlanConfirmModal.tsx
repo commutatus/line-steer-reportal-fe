@@ -386,11 +386,6 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
                   The following {pastCutoffSlots.length} slot{pastCutoffSlots.length !== 1 ? "s are" : " is"} past
                   the cutoff time{cutoffTimeDisplay ? ` (${cutoffTimeDisplay})` : ""} — <strong>an escalation email will be sent</strong> upon submission.
                 </p>
-                {pastCutoffSlots.map((s) => (
-                  <Tag key={s.key} color="red" className="mb-1">
-                    {s.time}
-                  </Tag>
-                ))}
               </div>
             }
             type="error"
