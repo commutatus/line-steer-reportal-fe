@@ -18,7 +18,7 @@ const TablePlan = (props: TablePlanProps) => {
     const dayjsDate = dayjs(loadScheduledDay.date);
 
     let fillStatus: PlanStatus = loadScheduledDay.status ?? PlanStatus.NotAvailable;
-    if (dayjsDate.isBefore(presentDate.subtract(1, "day"))) {
+    if (dayjsDate.isBefore(presentDate)) {
       fillStatus = PlanStatus.PastDay;
     }
 

@@ -10,6 +10,7 @@ export interface TimeSlot {
   mw: number | null;
   deviation: number | null;
   maximumRequestLimit: number | null;
+  escalationCutoffTime: string | null;
 }
 
 export interface DailyPlan {

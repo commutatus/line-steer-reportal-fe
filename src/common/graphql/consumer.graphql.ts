@@ -21,6 +21,7 @@ LoadScheduleDaySortInput) {
             id
             thresholdPercentage
             maximumRequestLimit
+            escalationCutoffTime
           }
           pastAverageLoad
         }

@@ -58,7 +58,7 @@ const Consumer = () => {
       });
       return;
     }
-    const isPastDate = dayjs(date).isBefore(dayjs(), 'day');
+    const isPastDate = dayjs(date).isBefore(dayjs());
     setSelectedDate(date);
     if (isPastDate) {
       setIsDayViewModalOpen(true);
@@ -82,6 +82,7 @@ const Consumer = () => {
       mw: schedule.load ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
       maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 
@@ -95,6 +96,7 @@ const Consumer = () => {
       mw: schedule.pastAverageLoad ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
       maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 

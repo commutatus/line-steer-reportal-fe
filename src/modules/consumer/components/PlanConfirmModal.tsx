@@ -5,7 +5,13 @@ import classNames from "classnames";
 import ReactECharts from "echarts-for-react";
 import { TimeSlot } from "@/common/utils/data/types";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
-import { CUTOFF_HOURS } from "@/common/constants/global";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
+
 
 interface PlanConfirmModalProps {
   open: boolean;
@@ -300,21 +306,34 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     });
   }, [date]);
 
+  const escalationCutoffTime = currentSlots.find((s) => s.escalationCutoffTime)?.escalationCutoffTime ?? null;
+
+  const escalationCutoffDate = useMemo(() => {
+    if (!escalationCutoffTime || !date) {
+      return null;
+    }
+    const cutoffSource = dayjs(escalationCutoffTime).utc();
+    const cutoff = dayjs(date).utc().set("hour", cutoffSource.hour()).set("minute", cutoffSource.minute()).add(1, "day");
+    return cutoff;
+  }, [escalationCutoffTime, date]);
+
+  const cutoffTimeDisplay = useMemo(() => {
+    if (!escalationCutoffTime) {
+      return null;
+    }
+    return convertToUTCHoursFormat(escalationCutoffTime);
+  }, [escalationCutoffTime]);
+
   const pastCutoffSlots = useMemo(() => {
-    if (!date) {
+    if (!escalationCutoffDate || !date) {
       return [];
     }
-    const now = new Date();
-    return changes
-      .map((change) => {
-        const [hh, mm] = change.time.split(":").map(Number);
-        const slotDate = new Date(date);
-        slotDate.setHours(hh, mm, 0, 0);
-        const hoursUntilSlot = (slotDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-        return { ...change, hoursUntilSlot };
-      })
-      .filter((s) => s.hoursUntilSlot < CUTOFF_HOURS);
-  }, [changes, date]);
+    return changes.filter((change) => {
+      const [hh, mm] = change.time.split(":").map(Number);
+      const slotDate = dayjs().utc().set("hour", hh).set("minute", mm).add(1, "day");
+      return slotDate.isAfter(escalationCutoffDate);
+    });
+  }, [changes, date, escalationCutoffDate]);
 
   const overLimitSlots = useMemo(() => {
     return currentSlots
@@ -364,9 +383,8 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
             description={
               <div className="text-xs mt-1">
                 <p className="mb-2 text-sm">
-                  Changes must be submitted at least {CUTOFF_HOURS} hours before the slot.
                   The following {pastCutoffSlots.length} slot{pastCutoffSlots.length !== 1 ? "s are" : " is"} past
-                  the cutoff — <strong>an escalation email will be sent</strong> upon submission.
+                  the cutoff time{cutoffTimeDisplay ? ` (${cutoffTimeDisplay})` : ""} — <strong>an escalation email will be sent</strong> upon submission.
                 </p>
                 {pastCutoffSlots.map((s) => (
                   <Tag key={s.key} color="red" className="mb-1">

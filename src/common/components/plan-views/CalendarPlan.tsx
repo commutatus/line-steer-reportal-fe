@@ -23,7 +23,7 @@ const CalendarPlan = (props: CalendarPlanProps) => {
 
   const getPlanStatusForDate = (date: Dayjs): PlanStatus => {
     const today = dayjs();
-    if (date.isBefore(today.subtract(1, "day"))) {
+    if (date.isBefore(today)) {
       return PlanStatus.PastDay;
     }
     const dateStr = date.format("YYYY-MM-DD");
