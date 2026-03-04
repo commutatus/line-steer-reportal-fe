@@ -4,6 +4,7 @@ import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 import DayPlanSheet from "./components/DayPlanSheet";
+import DayViewModal from "@/common/components/day-view-modal";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -42,6 +43,7 @@ const Consumer = () => {
   const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
+  const [isDayViewModalOpen, setIsDayViewModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const handleDayClick = (date: string) => {
@@ -56,8 +58,13 @@ const Consumer = () => {
       });
       return;
     }
+    const isPastDate = dayjs(date).isBefore(dayjs(), 'day');
     setSelectedDate(date);
-    setIsDayPlanSheetOpen(true);
+    if (isPastDate) {
+      setIsDayViewModalOpen(true);
+    } else {
+      setIsDayPlanSheetOpen(true);
+    }
   };
 
   const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
@@ -94,6 +101,11 @@ const Consumer = () => {
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
     if (!loadScheduleDay?.loadSchedules) return undefined;
     return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
+  }, [selectedDate, loadScheduledDays]);
+
+  const selectedLoadScheduleDay = useMemo(() => {
+    if (!selectedDate) return null;
+    return loadScheduledDays.find((day) => day.date === selectedDate) ?? null;
   }, [selectedDate, loadScheduledDays]);
 
   const handleDateChange = (date: dayjs.Dayjs) => {
@@ -167,6 +179,12 @@ const Consumer = () => {
           <Tabs items={tabItems} />
         )}
       </div>
+
+      <DayViewModal
+        loadScheduleDay={selectedLoadScheduleDay}
+        open={isDayViewModalOpen}
+        onOpenChange={setIsDayViewModalOpen}
+      />
 
       <DayPlanSheet
         date={selectedDate}

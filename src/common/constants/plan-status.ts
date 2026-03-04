@@ -7,6 +7,7 @@ export const PlanStatus = {
   InProgress: LoadScheduleDayStatusEnum.InProgress,
   Ready: LoadScheduleDayStatusEnum.Ready,
   NotAvailable: "not_available",
+  PastDay: "past_day",
 } as const;
 
 export type PlanStatus = (typeof PlanStatus)[keyof typeof PlanStatus];
@@ -16,9 +17,9 @@ export const fillConfig: Record<
   { color: string; label: string; bgClass: string; icon: IconDefinition }
 > = {
   [PlanStatus.Pending]: {
-    color: "var(--color-gray-400)",
+    color: "var(--color-blue-400)",
     label: "Pending",
-    bgClass: "bg-gray-200",
+    bgClass: "bg-blue-200",
     icon: faPlus,
   },
   [PlanStatus.InProgress]: {
@@ -34,9 +35,15 @@ export const fillConfig: Record<
     icon: faCheck,
   },
   [PlanStatus.NotAvailable]: {
-    color: "var(--color-red-500)",
+    color: "var(--color-gray-500)",
     label: "Not Available",
-    bgClass: "bg-red-50",
+    bgClass: "bg-gray-200",
     icon: faBan,
+  },
+  [PlanStatus.PastDay]: {
+    color: "var(--color-gray-500)",
+    label: "Past Day",
+    bgClass: "bg-gray-200",
+    icon: faCheck,
   },
 };

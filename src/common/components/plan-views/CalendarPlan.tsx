@@ -22,6 +22,10 @@ const CalendarPlan = (props: CalendarPlanProps) => {
   const { loadScheduledDays, onDayClick, currentDate, onDateChange, description } = props;
 
   const getPlanStatusForDate = (date: Dayjs): PlanStatus => {
+    const today = dayjs();
+    if (date.isBefore(today.subtract(1, "day"))) {
+      return PlanStatus.PastDay;
+    }
     const dateStr = date.format("YYYY-MM-DD");
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === dateStr);
     if (!loadScheduleDay?.status) {

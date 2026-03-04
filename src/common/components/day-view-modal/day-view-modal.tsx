@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
 
-interface GeneratorDayViewModalProps {
+interface DayViewModalProps {
   loadScheduleDay: LoadScheduleDay | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,11 +20,11 @@ interface HourRow {
   q3: string;
 }
 
-const GeneratorDayViewModal = ({
+const DayViewModal = ({
   loadScheduleDay,
   open,
   onOpenChange,
-}: GeneratorDayViewModalProps) => {
+}: DayViewModalProps) => {
   const schedules = loadScheduleDay?.loadSchedules;
 
   const formattedDate = useMemo(() => {
@@ -181,4 +181,4 @@ const GeneratorDayViewModal = ({
   );
 };
 
-export default GeneratorDayViewModal;
+export default DayViewModal;
