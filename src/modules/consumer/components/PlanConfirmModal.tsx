@@ -1,9 +1,12 @@
 import React, { useMemo } from "react";
-import { Modal, Table, Tag } from "antd";
+import { Alert, Modal, Table, Tag } from "antd";
+import { WarningOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import classNames from "classnames";
 import ReactECharts from "echarts-for-react";
 import { TimeSlot } from "@/common/utils/data/types";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
-import classNames from "classnames";
+import { CUTOFF_HOURS } from "@/common/constants/global";
 
 interface PlanConfirmModalProps {
   open: boolean;
@@ -298,6 +301,37 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     });
   }, [date]);
 
+  const pastCutoffSlots = useMemo(() => {
+    if (!date) {
+      return [];
+    }
+    const now = dayjs();
+    return changes
+      .map((change) => {
+        const [hh, mm] = change.time.split(":").map(Number);
+        const slotDate = dayjs(date).hour(hh).minute(mm).second(0);
+        const hoursUntilSlot = slotDate.diff(now, "hour", true);
+        return { ...change, hoursUntilSlot };
+      })
+      .filter((s) => s.hoursUntilSlot < CUTOFF_HOURS);
+  }, [changes, date]);
+
+  const overLimitSlots = useMemo(() => {
+    return currentSlots
+      .filter((slot) => {
+        if (slot.mw === null || slot.maximumRequestLimit === null) {
+          return false;
+        }
+        return slot.mw > slot.maximumRequestLimit;
+      })
+      .map((slot, i) => ({
+        index: i,
+        time: convertToUTCHoursFormat(slot.time),
+        mw: slot.mw,
+        limit: slot.maximumRequestLimit,
+      }));
+  }, [currentSlots]);
+
   const deviatingChanges = changes.filter((c) => c.deviatesFromAverage);
   const deviationCount = deviatingChanges.length;
   const uniqueDeviationThresholds = [
@@ -324,6 +358,47 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       centered
     >
       <div className="space-y-4">
+        {pastCutoffSlots.length > 0 && (
+          <Alert
+            title="Editing past the cutoff time"
+            description={
+              <div className="text-xs mt-1">
+                <p className="mb-2 text-sm">
+                  Changes must be submitted at least {CUTOFF_HOURS} hours before the slot.
+                  The following {pastCutoffSlots.length} slot{pastCutoffSlots.length !== 1 ? "s are" : " is"} past
+                  the cutoff — <strong>an escalation email will be sent</strong> upon submission.
+                </p>
+                {pastCutoffSlots.map((s) => (
+                  <Tag key={s.key} color="red" className="mb-1">
+                    {s.time}
+                  </Tag>
+                ))}
+              </div>
+            }
+            type="error"
+            showIcon
+            icon={<WarningOutlined />}
+          />
+        )}
+
+        {overLimitSlots.length > 0 && (
+          <Alert
+            title={<h6 className="text-base!">{`${overLimitSlots.length} slot${overLimitSlots.length !== 1 ? "s" : ""} exceed the MW limit`}</h6>}
+            description={
+              <div className="mt-1">
+                {overLimitSlots.map((s) => (
+                  <Tag key={s.index} color="orange" className="mb-1">
+                    {s.time} — {s.mw?.toFixed(2)} MW (limit: {s.limit?.toFixed(2)} MW)
+                  </Tag>
+                ))}
+              </div>
+            }
+            type="warning"
+            showIcon
+            icon={<WarningOutlined />}
+          />
+        )}
+
         <div>
           <h4 className="text-sm font-medium mb-2!">
             Load Profile {averageSlots ? "(vs Average)" : ""}
