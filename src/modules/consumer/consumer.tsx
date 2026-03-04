@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Empty, Modal, Spin, Tabs, message } from "antd";
+import { Empty, Modal, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import DayPlanSheet from "./components/DayPlanSheet";
@@ -13,6 +13,7 @@ import ParkSelector from "@/common/components/park-selector";
 import { FilterOutlined } from "@ant-design/icons";
 import { faBan } from "@awesome.me/kit-31481ff84e/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PageLoader from "@/common/components-ui/page-loader/page-loader";
 
 const presentDate = dayjs();
 
@@ -101,9 +102,7 @@ const Consumer = () => {
   if (loadScheduledDaysLoading) {
     return (
       <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
-        <div className="min-h-screen flex items-center justify-center">
-          <Spin size="large" />
-        </div>
+        <PageLoader />
       </RootLayout>
     );
   }

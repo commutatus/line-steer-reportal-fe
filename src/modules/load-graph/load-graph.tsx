@@ -1,6 +1,6 @@
 import RootLayout from "@/common/layouts/root-layout";
 import { useState, useMemo, useEffect } from "react";
-import { Checkbox, Spin } from "antd";
+import { Checkbox } from "antd";
 import ReactECharts from "echarts-for-react";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
@@ -9,6 +9,7 @@ import { OVERALL_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 import { useGlobals } from "@/common/context/globals";
 import { UserType } from "@/common/hooks/useCurrentUser";
 import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
+import PageLoader from "@/common/components-ui/page-loader/page-loader";
 
 const presentDate = dayjs();
 
@@ -169,9 +170,7 @@ const LoadGraph = () => {
   if (isLoadGraphLoading) {
     return (
       <RootLayout pageTitle="Load Graph">
-        <div className="min-h-screen flex items-center justify-center">
-          <Spin size="large" />
-        </div>
+        <PageLoader />
       </RootLayout>
     )
   }

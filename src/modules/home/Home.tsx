@@ -1,3 +1,4 @@
+import PageLoader from "@/common/components-ui/page-loader/page-loader";
 import { useGlobals } from "@/common/context/globals";
 import RootLayout from "@/common/layouts/root-layout";
 import { useRouter } from "next/router";
@@ -19,8 +20,8 @@ const Home = () => {
   }, [currentUser]);
 
   return (
-    <RootLayout pageTitle="Planning">
-      <div>Planning</div>
+    <RootLayout pageTitle="Loading" shouldShowSidebar={false}>
+      <PageLoader />
     </RootLayout>
   );
 };

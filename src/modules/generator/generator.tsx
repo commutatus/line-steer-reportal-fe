@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Empty, Spin, Tabs } from "antd";
+import { Empty, Tabs } from "antd";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -11,6 +11,7 @@ import GeneratorFilters from "@/common/components/generator-filters";
 import GeneratorDayViewModal from "./components/GeneratorDayViewModal";
 import { FilterOutlined } from "@ant-design/icons";
 import { useGlobals } from "@/common/context/globals";
+import PageLoader from "@/common/components-ui/page-loader/page-loader";
 
 const presentDate = dayjs();
 
@@ -90,9 +91,7 @@ const Generator = () => {
   if (loadScheduledDaysLoading) {
     return (
       <RootLayout pageTitle="Requests" navbarExtra={<GeneratorFilters />}>
-        <div className="min-h-screen flex items-center justify-center">
-          <Spin size="large" />
-        </div>
+        <PageLoader />
       </RootLayout>
     );
   }
