@@ -1,30 +1,26 @@
-import dayjs from "dayjs";
-import { Table, Tag } from "antd";
-import { fillConfig } from "@/common/constants/plan-status";
+import dayjs, { Dayjs } from "dayjs";
+import { Empty, Table, Tag } from "antd";
+import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
-import { LoadScheduleDayStatusEnum } from "@/generated/graphql";
 
 interface TablePlanProps {
   loadScheduledDays: LoadScheduleDay[];
   onDayClick?: (date: string) => void;
+  currentDate: Dayjs;
 }
 
 const TablePlan = (props: TablePlanProps) => {
-  const { loadScheduledDays, onDayClick } = props;
-  const now = dayjs();
-  const daysInMonth = now.daysInMonth();
+  const { loadScheduledDays, onDayClick, currentDate } = props;
+  const dataSource = loadScheduledDays.map((loadScheduledDay) => {
+    const totalMW = loadScheduledDay.loadSchedules?.reduce((sum, schedule) => sum + (schedule.load || 0), 0) || 0;
+    const dayjsDate = dayjs(loadScheduledDay.date);
 
-  const rows = Array.from({ length: daysInMonth }, (_, i) => {
-    const date = now.date(i + 1);
-    const dateStr = date.format("YYYY-MM-DD");
-    const loadScheduleDay = loadScheduledDays.find((day) => day.date === dateStr);
-    const totalMW = loadScheduleDay?.loadSchedules?.reduce((sum, schedule) => sum + (schedule.load || 0), 0) || 0;
-    const fillStatus = loadScheduleDay?.status ?? LoadScheduleDayStatusEnum.Pending;
+    const fillStatus = loadScheduledDay.status ?? PlanStatus.NotAvailable;
     return {
-      key: dateStr,
-      date: dateStr,
-      dayOfWeek: date.format("ddd"),
+      key: loadScheduledDay.id,
+      date: loadScheduledDay.date,
+      dayOfWeek: dayjsDate.format("ddd"),
       fillStatus,
       totalMW,
     };
@@ -48,7 +44,7 @@ const TablePlan = (props: TablePlanProps) => {
       title: "Status",
       dataIndex: "fillStatus",
       key: "fillStatus",
-      render: (status: LoadScheduleDayStatusEnum) => {
+      render: (status: PlanStatus) => {
         const config = fillConfig[status];
         return (
           <Tag color={config.color}>
@@ -76,7 +72,7 @@ const TablePlan = (props: TablePlanProps) => {
         </p>
       </div>
       <Table
-        dataSource={rows}
+        dataSource={dataSource}
         columns={columns}
         pagination={false}
         size="middle"
@@ -84,6 +80,9 @@ const TablePlan = (props: TablePlanProps) => {
           onClick: () => onDayClick?.(record.date),
           className: "cursor-pointer",
         })}
+        locale={{
+          emptyText: <Empty description={`Loadschedule not available for ${currentDate.format("MMM YYYY")}`} />
+        }}
       />
     </div>
   );

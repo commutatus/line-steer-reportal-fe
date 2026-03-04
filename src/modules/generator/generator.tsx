@@ -81,6 +81,7 @@ const Generator = () => {
         <TablePlan
           loadScheduledDays={loadScheduledDays}
           onDayClick={handleDayClick}
+          currentDate={currentDate}
         />
       ),
     },

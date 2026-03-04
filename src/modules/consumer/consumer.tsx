@@ -129,6 +129,7 @@ const Consumer = () => {
         <TablePlan
           loadScheduledDays={loadScheduledDays}
           onDayClick={handleDayClick}
+          currentDate={currentDate}
         />
       ),
     },
