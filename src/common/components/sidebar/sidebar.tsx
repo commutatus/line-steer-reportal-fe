@@ -23,6 +23,15 @@ import { UserType } from "@/common/hooks/useCurrentUser";
 
 const cx = classNames.bind(styles);
 
+const CommingSoonLabel = ({ label, isCollapsed } : { label: string, isCollapsed: boolean }) => {
+  return (
+    <span className="flex items-center gap-2">
+      {label}
+      {!isCollapsed && <Tag color="orange" className="text-[10px]! leading-4! py-0! px-1! ml-0!">Soon</Tag>}
+    </span>
+  )
+}
+
 const SideBarHeader = (sidebarProps: {
   isSidebarCollapsed?: boolean;
   toggleSidebarCollapse?: () => void;
@@ -98,10 +107,7 @@ const Sidebar = () => {
           key: MenuKeys.BILLING,
           label: (
             <Link href={MENU_ROUTES[MenuKeys.BILLING]}>
-              <span className="flex items-center justify-between w-full">
-                Billing
-                {!isSidebarCollapsed && <Tag color="orange" className="text-[10px]! leading-4! py-0! px-1! ml-0!">Soon</Tag>}
-              </span>
+              <CommingSoonLabel label="Billing" isCollapsed={isSidebarCollapsed ?? false} />
             </Link>
           ),
           icon: <DollarOutlined />,
@@ -110,10 +116,7 @@ const Sidebar = () => {
           key: MenuKeys.RECS,
           label: (
             <Link href={MENU_ROUTES[MenuKeys.RECS]}>
-              <span className="flex items-center justify-between w-full">
-                RECs
-                {!isSidebarCollapsed && <Tag color="orange" className="text-[10px]! leading-4! py-0! px-1! ml-0!">Soon</Tag>}
-              </span>
+              <CommingSoonLabel label="RECs" isCollapsed={isSidebarCollapsed ?? false} />
             </Link>
           ),
           icon: <SafetyCertificateOutlined />,
