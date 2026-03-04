@@ -20,6 +20,7 @@ LoadScheduleDaySortInput) {
           factory {
             id
             thresholdPercentage
+            maximumRequestLimit
           }
           pastAverageLoad
         }

@@ -161,6 +161,8 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     const averageValues = averageSlots
       ? averageSlots.map((s) => s.mw ?? 0)
       : [];
+    const limitValues = currentSlots.map((s) => s.maximumRequestLimit ?? 0);
+    const hasLimitData = limitValues.some((v) => v > 0);
 
     const markData: { coord: [number, number]; itemStyle: { color: string } }[] = [];
     if (averageSlots) {
@@ -179,9 +181,11 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
       type: string;
       data: number[];
       smooth: boolean;
-      areaStyle: { opacity: number };
+      areaStyle?: { opacity: number };
       color: string;
       lineStyle?: { type: string; width: number };
+      symbol?: string | boolean;
+      symbolSize?: number;
       markPoint?: {
         symbol: string;
         symbolSize: number;
@@ -218,6 +222,18 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
         lineStyle: { type: "dashed", width: 2 },
         color: "#94a3b8",
         areaStyle: { opacity: 0.05 },
+      });
+    }
+
+    if (hasLimitData) {
+      series.push({
+        name: "Limit",
+        type: "line",
+        data: limitValues,
+        smooth: false,
+        lineStyle: { type: "dashed", width: 2 },
+        color: "#f59e0b",
+        symbol: "none",
       });
     }
 

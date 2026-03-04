@@ -81,6 +81,7 @@ const Consumer = () => {
       time: schedule.startTime || '',
       mw: schedule.load ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
+      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 
@@ -93,6 +94,7 @@ const Consumer = () => {
       time: schedule.startTime || '',
       mw: schedule.pastAverageLoad ?? null,
       deviation: schedule.factory?.thresholdPercentage ?? null,
+      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
     }));
   }, [selectedDate, loadScheduledDays]);
 

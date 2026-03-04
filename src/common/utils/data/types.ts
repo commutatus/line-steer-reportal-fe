@@ -9,6 +9,7 @@ export interface TimeSlot {
   time: string; // HH:mm format
   mw: number | null;
   deviation: number | null;
+  maximumRequestLimit: number | null;
 }
 
 export interface DailyPlan {

@@ -81,6 +81,8 @@ const DayViewModal = ({
     const loadValues = schedules.map((s) => s.load ?? 0);
     const avgValues = schedules.map((s) => s.pastAverageLoad ?? 0);
     const hasAverageData = avgValues.some((v) => v > 0);
+    const limitValues = schedules.map((s) => s.factory?.maximumRequestLimit ?? 0);
+    const hasLimitData = limitValues.some((v) => v > 0);
 
     return {
       tooltip: {
@@ -88,7 +90,11 @@ const DayViewModal = ({
         axisPointer: { type: "cross" },
       },
       legend: {
-        data: hasAverageData ? ["Selected Day", "Average"] : ["Selected Day"],
+        data: [
+          "Selected Day",
+          ...(hasAverageData ? ["Average"] : []),
+          ...(hasLimitData ? ["Limit"] : []),
+        ],
         bottom: 0,
       },
       grid: {
@@ -129,7 +135,20 @@ const DayViewModal = ({
                 data: avgValues,
                 smooth: true,
                 lineStyle: { width: 2, type: "dashed" as const },
+                itemStyle: { color: "#94a3b8" },
+              },
+            ]
+          : []),
+        ...(hasLimitData
+          ? [
+              {
+                name: "Limit",
+                type: "line",
+                data: limitValues,
+                smooth: false,
+                lineStyle: { width: 2, type: "dashed" as const },
                 itemStyle: { color: "#f59e0b" },
+                symbol: "none" as const,
               },
             ]
           : []),

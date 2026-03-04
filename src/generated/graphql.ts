@@ -505,7 +505,7 @@ export type GetLoadScheduleDaysQueryVariables = Exact<{
 }>;
 
 
-export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null, totalLoad: number, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null, pastAverageLoad?: number | null, factory?: { __typename?: 'Factory', id: string, thresholdPercentage?: number | null } | null }> | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null }> } | null };
+export type GetLoadScheduleDaysQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null, totalLoad: number, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null, pastAverageLoad?: number | null, factory?: { __typename?: 'Factory', id: string, thresholdPercentage?: number | null, maximumRequestLimit?: number | null } | null }> | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null, park?: { __typename?: 'Park', id: string, name?: string | null, city?: string | null } | null }> } | null };
 
 export type GetDayWisePlanQueryQueryVariables = Exact<{
   filters?: InputMaybe<LoadScheduleDayFilterInput>;
