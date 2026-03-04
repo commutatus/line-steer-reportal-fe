@@ -13,13 +13,13 @@ type ComingSoonPageProps = {
 const getBackButtonDetails = (userType: UserType) => {
   let result = {
     label: "Planning",
-    pathname: "planning"
+    pathname: "/consumer"
   }
 
   if (userType === UserType.GENERATOR) {
     result = {
       label: "Requests",
-      pathname: "requests",
+      pathname: "/generator",
     }
   }
 
