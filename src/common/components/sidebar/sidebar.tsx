@@ -1,6 +1,6 @@
 import Sider from "antd/es/layout/Sider";
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Menu, MenuProps } from "antd";
+import { Button, Menu, MenuProps, Tag } from "antd";
 import classNames from "classnames/bind";
 import styles from "./sidebar.module.scss";
 import { useGlobals } from "@/common/context/globals";
@@ -11,15 +11,26 @@ import { useRouter } from "next/router";
 import {
   CalendarOutlined,
   BarChartOutlined,
+  DollarOutlined,
   DoubleLeftOutlined,
   FileTextOutlined,
   LineChartOutlined,
+  SafetyCertificateOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
 import Image from "next/image";
 import { UserType } from "@/common/hooks/useCurrentUser";
 
 const cx = classNames.bind(styles);
+
+const CommingSoonLabel = ({ label, isCollapsed } : { label: string, isCollapsed: boolean }) => {
+  return (
+    <span className="flex items-center gap-2">
+      {label}
+      {!isCollapsed && <Tag color="orange" className="text-[10px]! leading-4! py-0! px-1! ml-0!">Soon</Tag>}
+    </span>
+  )
+}
 
 const SideBarHeader = (sidebarProps: {
   isSidebarCollapsed?: boolean;
@@ -77,6 +88,8 @@ const Sidebar = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
+    const finalLinks = [];
+
     let firstItem = {
       key: MenuKeys.PLANNING,
       label: <Link href={MENU_ROUTES[MenuKeys.PLANNING]}>Planning</Link>,
@@ -89,6 +102,26 @@ const Sidebar = () => {
         label: <Link href={MENU_ROUTES[MenuKeys.REQUESTS]}>Requests</Link>,
         icon: <UnorderedListOutlined />,
       };
+      finalLinks.push(...[
+        {
+          key: MenuKeys.BILLING,
+          label: (
+            <Link href={MENU_ROUTES[MenuKeys.BILLING]}>
+              <CommingSoonLabel label="Billing" isCollapsed={isSidebarCollapsed ?? false} />
+            </Link>
+          ),
+          icon: <DollarOutlined />,
+        },
+        {
+          key: MenuKeys.RECS,
+          label: (
+            <Link href={MENU_ROUTES[MenuKeys.RECS]}>
+              <CommingSoonLabel label="RECs" isCollapsed={isSidebarCollapsed ?? false} />
+            </Link>
+          ),
+          icon: <SafetyCertificateOutlined />,
+        },
+      ])
     }
 
     return [
@@ -115,8 +148,9 @@ const Sidebar = () => {
           },
         ],
       },
+      ...finalLinks,
     ].filter((item) => item !== null);
-  }, [currentUser?.userType]);
+  }, [currentUser?.userType, isSidebarCollapsed]);
 
   useEffect(() => {
     const { selectedKey, openKey } = getMenuKeysFromPathname(router.pathname);

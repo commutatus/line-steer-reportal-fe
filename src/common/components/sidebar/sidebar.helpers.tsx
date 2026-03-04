@@ -6,6 +6,8 @@ export enum MenuKeys {
   DAY_WISE_PLAN = "day-wise-plan",
   OVERALL_PLAN = "overall-plan",
   LOAD_GRAPH = "load-graph",
+  BILLING = "billing",
+  RECS = "recs",
 }
 
 export const MENU_ROUTES: Record<MenuKeys, string> = {
@@ -16,6 +18,8 @@ export const MENU_ROUTES: Record<MenuKeys, string> = {
   [MenuKeys.DAY_WISE_PLAN]: "/reports/day-wise-plan",
   [MenuKeys.OVERALL_PLAN]: "/reports/overall-plan",
   [MenuKeys.LOAD_GRAPH]: "/reports/load-graph",
+  [MenuKeys.BILLING]: "/billing",
+  [MenuKeys.RECS]: "/recs",
 };
 
 export const routeToMenuMap: {
@@ -37,6 +41,8 @@ export const routeToMenuMap: {
     selectedKey: MenuKeys.LOAD_GRAPH,
     openKey: MenuKeys.REPORTS,
   },
+  [MENU_ROUTES[MenuKeys.BILLING]]: { selectedKey: MenuKeys.BILLING },
+  [MENU_ROUTES[MenuKeys.RECS]]: { selectedKey: MenuKeys.RECS },
 };
 
 export const getMenuKeysFromPathname = (pathname: string) => {
