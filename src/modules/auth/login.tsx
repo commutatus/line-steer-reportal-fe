@@ -5,7 +5,6 @@ import {
 } from "@/generated/graphql";
 import { useMutation } from "@apollo/client";
 import { Button, Form, Input, Typography } from "antd";
-import { MailOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -67,7 +66,6 @@ const Login = (props: LoginProps) => {
         ]}
       >
         <Input
-          prefix={<MailOutlined className="text-gray-400" />}
           placeholder="you@example.com"
           size="large"
           className="rounded-lg"
