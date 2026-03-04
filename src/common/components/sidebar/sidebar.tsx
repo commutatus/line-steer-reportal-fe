@@ -4,9 +4,9 @@ import { Button, Menu, MenuProps } from "antd";
 import classNames from "classnames/bind";
 import styles from "./sidebar.module.scss";
 import { useGlobals } from "@/common/context/globals";
-import useResponsive from "@/common/hooks/useResponsive";
+import useResponsive, { Breakpoints } from "@/common/hooks/useResponsive";
 import Link from "next/link";
-import { getMenuKeysFromPathname, MenuKeys } from "./sidebar.helpers";
+import { getMenuKeysFromPathname, MenuKeys, MENU_ROUTES } from "./sidebar.helpers";
 import { useRouter } from "next/router";
 import {
   CalendarOutlined,
@@ -68,31 +68,25 @@ const SideBarHeader = (sidebarProps: {
 
 const Sidebar = () => {
   const { isSidebarCollapsed, toggleSidebarCollapse, currentUser } = useGlobals();
-  const { isMobile } = useResponsive();
+  const { breakpoint } = useResponsive();
   const router = useRouter();
 
-  const isSmallScreen = isMobile;
+  const isSmallScreen = breakpoint <= Breakpoints.lg;
 
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const SIDEBAR_MENU_ITEMS: MenuProps["items"] = useMemo(() => {
-    const planningHref = "/consumer";
-    const requestsHref = "/generator";
-    const dayWisePlanHref = "/reports/day-wise-plan";
-    const overallPlanHref = "/reports/overall-plan";
-    const loadGraphHref = "/reports/load-graph";
-
     let firstItem = {
       key: MenuKeys.PLANNING,
-      label: <Link href={planningHref}>Planning</Link>,
+      label: <Link href={MENU_ROUTES[MenuKeys.PLANNING]}>Planning</Link>,
       icon: <CalendarOutlined />,
     };
 
     if (currentUser?.userType === UserType.GENERATOR) {
       firstItem = {
         key: MenuKeys.REQUESTS,
-        label: <Link href={requestsHref}>Requests</Link>,
+        label: <Link href={MENU_ROUTES[MenuKeys.REQUESTS]}>Requests</Link>,
         icon: <UnorderedListOutlined />,
       };
     }
@@ -106,17 +100,17 @@ const Sidebar = () => {
         children: [
           {
             key: MenuKeys.DAY_WISE_PLAN,
-            label: <Link href={dayWisePlanHref}>Day Wise Plan</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.DAY_WISE_PLAN]}>Day Wise Plan</Link>,
             icon: <CalendarOutlined />,
           },
           {
             key: MenuKeys.OVERALL_PLAN,
-            label: <Link href={overallPlanHref}>Overall Plan</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.OVERALL_PLAN]}>Overall Plan</Link>,
             icon: <FileTextOutlined />,
           },
           {
             key: MenuKeys.LOAD_GRAPH,
-            label: <Link href={loadGraphHref}>Load Graph</Link>,
+            label: <Link href={MENU_ROUTES[MenuKeys.LOAD_GRAPH]}>Load Graph</Link>,
             icon: <LineChartOutlined />,
           },
         ],

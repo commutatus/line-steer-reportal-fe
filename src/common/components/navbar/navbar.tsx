@@ -53,20 +53,20 @@ const Navbar = ({ pageTitle, pageDescription, navbarExtra }: NavbarProps) => {
   const { toggleSidebarCollapse, isSidebarCollapsed } = useGlobals();
 
   return (
-    <Header className="flex justify-between !leading-0 items-center sticky top-0 z-[1] !min-h-[40px] !px-[16px] !py-[8px] !bg-white border-solid border-0 border-b border-gray-3">
+    <Header className="flex justify-between leading-0! items-center sticky top-0 z-[1] min-h-[40px]! px-[16px]! py-[8px]! bg-white! border-solid border-0 border-b border-gray-3 h-auto!">
       <div className="inline-flex items-center gap-[8px]">
         <div>
           {isSidebarCollapsed && (
             <Button
               type="text"
               onClick={() => toggleSidebarCollapse?.()}
-              icon={<MenuOutlined className="!text-gray-6" />}
+              icon={<MenuOutlined className="text-gray-6!" />}
             />
           )}
         </div>
         {(pageTitle || pageDescription) && (
-          <div>
-            <h6 className="mb-3! font-semibold">
+          <div className="space-y-3!">
+            <h6 className="font-semibold">
               {pageTitle}
             </h6>
             {pageDescription && <p className="text-sm text-gray-500">{pageDescription}</p>}

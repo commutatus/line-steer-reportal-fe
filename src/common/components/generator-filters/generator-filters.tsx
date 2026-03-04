@@ -25,25 +25,29 @@ const GeneratorFilters = () => {
   };
 
   return (
-    <Flex gap={8} align="center">
-      <span className="text-sm text-slate-600">Park:</span>
-      <Select
-        placeholder="Select a Park"
-        options={parkOptions}
-        value={parkId}
-        onChange={handleParkChange}
-        className="w-[180px]"
-      />
-      <span className="text-sm text-slate-600">Factory:</span>
-      <Select
-        placeholder="Select a Factory"
-        options={factoryOptions}
-        value={factoryId}
-        onChange={handleFactoryChange}
-        allowClear
-        disabled={!parkId}
-        className="w-[180px]"
-      />
+    <Flex gap={8} align="center" wrap justify="flex-end" className="py-2">
+      <div>
+        <span className="text-sm text-slate-600">Park:</span>
+        <Select
+          placeholder="Select a Park"
+          options={parkOptions}
+          value={parkId}
+          onChange={handleParkChange}
+          className="w-[180px]"
+        />
+      </div>
+      <div>
+        <span className="text-sm text-slate-600">Factory:</span>
+        <Select
+          placeholder="Select a Factory"
+          options={factoryOptions}
+          value={factoryId}
+          onChange={handleFactoryChange}
+          allowClear
+          disabled={!parkId}
+          className="w-[180px]"
+        />
+      </div>
     </Flex>
   );
 }
