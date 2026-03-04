@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Empty, Modal, Tabs, message } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
+import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 import DayPlanSheet from "./components/DayPlanSheet";
 import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
@@ -131,6 +132,11 @@ const Consumer = () => {
           currentDate={currentDate}
         />
       ),
+    },
+    {
+      key: "3",
+      label: "History",
+      children: <AuditHistoryTab />,
     },
   ];
 
