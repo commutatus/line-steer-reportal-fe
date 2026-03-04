@@ -11,23 +11,25 @@ import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import dayjs from "dayjs";
 import { useGlobals } from "@/common/context/globals";
-import ParkSelector from "@/common/components/park-selector";
 import { FilterOutlined } from "@ant-design/icons";
 import { faBan } from "@awesome.me/kit-31481ff84e/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PageLoader from "@/common/components-ui/page-loader/page-loader";
+import GeneratorFilters from "@/common/components/generator-filters";
 
 const presentDate = dayjs();
 
 const Consumer = () => {
   const { currentPark } = useGlobals();
-  const { parkId, contractId } = currentPark ?? {};
+  const { parkId, factoryId } = currentPark ?? {};
+  const hasSelection = Boolean(parkId && factoryId);
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
 
   const { data: loadScheduledDaysData, loading: loadScheduledDaysLoading } = useQuery<GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables>(GET_LOAD_SCHEDULED_DAYS, {
     variables: {
       filters: {
         parkIds: parkId ? [parkId] : undefined,
+        factoryIds: factoryId ? [factoryId] : undefined,
         dateRange: {
           from: currentDate.startOf("month").format("YYYY-MM-DD"),
           to: currentDate.endOf("month").format("YYYY-MM-DD"),
@@ -38,7 +40,7 @@ const Consumer = () => {
         direction: SortDirection.Asc,
       },
     },
-    skip: !parkId || !contractId,
+    skip: !hasSelection,
   });
   const loadScheduledDays = useMemo(() => loadScheduledDaysData?.loadScheduleDays?.data ?? [], [loadScheduledDaysData]);
 
@@ -118,7 +120,7 @@ const Consumer = () => {
 
   if (loadScheduledDaysLoading) {
     return (
-      <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+      <RootLayout pageTitle="Consumer" navbarExtra={<GeneratorFilters />}>
         <PageLoader />
       </RootLayout>
     );
@@ -157,9 +159,9 @@ const Consumer = () => {
   ];
 
   return (
-    <RootLayout pageTitle="Consumer" navbarExtra={<ParkSelector />}>
+    <RootLayout pageTitle="Consumer" navbarExtra={<GeneratorFilters />}>
       <div className="p-6">
-        {!parkId ? (
+        {!hasSelection ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
             <Empty
               image={
@@ -170,10 +172,14 @@ const Consumer = () => {
               description={
                 <div className="text-center">
                   <p className="text-lg font-medium mb-1">
-                    Select a Park to get started
+                    {!parkId
+                      ? "Select a Park to get started"
+                      : "Now select a Factory"}
                   </p>
                   <p className="text-gray-500 text-sm">
-                    Choose a park from the dropdown above to view its calendar and daily plans.
+                    {!parkId
+                      ? "Choose a park from the dropdown above to view its factories and plans."
+                      : "Pick a factory from the dropdown to view its calendar and daily plans."}
                   </p>
                 </div>
               }
