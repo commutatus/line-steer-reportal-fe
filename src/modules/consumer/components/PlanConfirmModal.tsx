@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { Alert, Modal, Table, Tag } from "antd";
 import { WarningOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
 import classNames from "classnames";
 import ReactECharts from "echarts-for-react";
 import { TimeSlot } from "@/common/utils/data/types";
@@ -305,12 +304,13 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     if (!date) {
       return [];
     }
-    const now = dayjs();
+    const now = new Date();
     return changes
       .map((change) => {
         const [hh, mm] = change.time.split(":").map(Number);
-        const slotDate = dayjs(date).hour(hh).minute(mm).second(0);
-        const hoursUntilSlot = slotDate.diff(now, "hour", true);
+        const slotDate = new Date(date);
+        slotDate.setHours(hh, mm, 0, 0);
+        const hoursUntilSlot = (slotDate.getTime() - now.getTime()) / (1000 * 60 * 60);
         return { ...change, hoursUntilSlot };
       })
       .filter((s) => s.hoursUntilSlot < CUTOFF_HOURS);
