@@ -1,0 +1,224 @@
+import RootLayout from '@/common/layouts/root-layout';
+import React, { useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import {
+  GetLoadScheduleDaysQuery,
+  GetLoadScheduleDaysQueryVariables,
+  LoadScheduleDaySortColumn,
+  LoadScheduleDayStatusEnum,
+  SortDirection,
+} from '@/generated/graphql';
+import { useQuery } from '@apollo/client';
+import { GET_LOAD_SCHEDULED_DAYS } from '@/common/graphql/consumer.graphql';
+import { Table, Tag, Select } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { fillConfig, PlanStatus } from '@/common/constants/plan-status';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useGlobals } from '@/common/context/globals';
+import ExportScheduleButton from '../consumer/components/ExportScheduleButton';
+import DayViewModal from '@/common/components/day-view-modal/day-view-modal';
+import { LoadScheduleDay } from '@/common/types/load-schedule';
+
+const presentDate = dayjs();
+
+interface TableRow {
+  key: string;
+  date: string;
+  [key: string]: string | LoadScheduleDayStatusEnum | null | undefined;
+}
+
+const OverAllPlanGenerator = () => {
+  const { currentPark } = useGlobals();
+  const { parks } = currentPark ?? {};
+  const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
+  const [isDayViewOpen, setIsDayViewOpen] = useState(false);
+  const [selectedDayKey, setSelectedDayKey] = useState<{ date: string; factoryId: string } | null>(null);
+
+  const dateRange = {
+    from: presentDate.startOf('month').format('YYYY-MM-DD'),
+    to: presentDate.endOf('month').format('YYYY-MM-DD'),
+  };
+
+  const { data, loading: isLoading } = useQuery<
+    GetLoadScheduleDaysQuery,
+    GetLoadScheduleDaysQueryVariables
+  >(GET_LOAD_SCHEDULED_DAYS, {
+    variables: {
+      filters: {
+        dateRange,
+        parkIds: selectedParkId ? [selectedParkId] : undefined,
+      },
+      sort: {
+        column: LoadScheduleDaySortColumn.Date,
+        direction: SortDirection.Asc,
+      },
+    },
+    skip: !selectedParkId
+  });
+
+  const loadScheduleDays = useMemo(() => data?.loadScheduleDays?.data ?? [], [data]);
+
+  const availableFactories = useMemo(() => {
+    const factoryMap = new Map<string, string>();
+    loadScheduleDays.forEach((day) => {
+      if (day.factory?.id && day.factory?.name) {
+        factoryMap.set(day.factory.id, day.factory.name);
+      }
+    });
+    return Array.from(factoryMap, ([id, name]) => ({ id, name }));
+  }, [loadScheduleDays]);
+
+  const tableData = useMemo((): TableRow[] => {
+    const dateMap = new Map<string, TableRow>();
+
+    loadScheduleDays.forEach((day) => {
+      const existing = dateMap.get(day.date);
+
+      if (existing) {
+        if (day.factory?.id) {
+          existing[`factory_${day.factory.id}`] = day.status;
+        }
+      } else {
+        const row: TableRow = {
+          key: day.date,
+          date: day.date,
+        };
+        if (day.factory?.id) {
+          row[`factory_${day.factory.id}`] = day.status;
+        }
+        dateMap.set(day.date, row);
+      }
+    });
+
+    return Array.from(dateMap.values());
+  }, [loadScheduleDays]);
+
+  const columns: ColumnsType<TableRow> = useMemo(() => {
+    const cols: ColumnsType<TableRow> = [
+      {
+        title: 'Date',
+        dataIndex: 'date',
+        key: 'date',
+        fixed: 'left',
+        width: 140,
+        render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
+      },
+    ];
+
+    availableFactories.forEach((factory) => {
+      cols.push({
+        title: factory.name,
+        dataIndex: `factory_${factory.id}`,
+        key: `factory_${factory.id}`,
+        align: 'center',
+        render: (status: LoadScheduleDayStatusEnum | null | undefined, record: TableRow) => {
+          if (!status) {
+            return <span className="text-gray-400">—</span>;
+          }
+          const config = fillConfig[status as PlanStatus];
+          if (!config) {
+            return <span className="text-gray-400">—</span>;
+          }
+          return (
+            <Tag
+              color={config.color}
+              className="cursor-pointer"
+              onClick={() => handleStatusClick(record.date, factory.id)}
+            >
+              <FontAwesomeIcon icon={config.icon} /> {config.label}
+            </Tag>
+          );
+        },
+      });
+    });
+
+    cols.push({
+      title: '',
+      key: 'export',
+      width: 60,
+      render: (_: unknown, record: TableRow) => (
+        <ExportScheduleButton date={{ from: record.date, to: record.date }} />
+      ),
+    });
+
+    return cols;
+  }, [availableFactories]);
+
+  const selectedLoadScheduleDay = useMemo((): LoadScheduleDay | null => {
+    if (!selectedDayKey) {
+      return null;
+    }
+    return loadScheduleDays.find(
+      (day) => day.date === selectedDayKey.date && day.factory?.id === selectedDayKey.factoryId
+    ) ?? null;
+  }, [selectedDayKey, loadScheduleDays]);
+
+  const handleStatusClick = (date: string, factoryId: string) => {
+    setSelectedDayKey({ date, factoryId });
+    setIsDayViewOpen(true);
+  };
+
+  const parkOptions = useMemo(() => {
+    return (parks ?? []).map((park) => ({
+      label: park.name ?? park.id,
+      value: park.id,
+    }));
+  }, [parks]);
+
+  return (
+    <RootLayout pageTitle="Overall Plan">
+      <div className="p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Overall Plan Report</h2>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Select
+                placeholder="Select a Park"
+                allowClear
+                className="w-[220px]!"
+                value={selectedParkId}
+                onChange={(val) => setSelectedParkId(val ?? null)}
+                options={parkOptions}
+              />
+              {selectedParkId && (
+                <>
+                  <ExportScheduleButton
+                    label="Previous 7 Days"
+                    date={{
+                      from: presentDate.subtract(7, 'day').format('YYYY-MM-DD'),
+                      to: presentDate.format('YYYY-MM-DD'),
+                    }}
+                  />
+                  <ExportScheduleButton
+                    label="Next 7 Days"
+                    date={{
+                      from: presentDate.format('YYYY-MM-DD'),
+                      to: presentDate.add(7, 'day').format('YYYY-MM-DD'),
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+          <div className="p-6">
+            <Table
+              dataSource={selectedParkId ? tableData: []}
+              columns={columns}
+              pagination={false}
+              loading={isLoading}
+              scroll={{ x: 'max-content' }}
+              size="small"
+            />
+          </div>
+        </div>
+      </div>
+      <DayViewModal
+        loadScheduleDay={selectedLoadScheduleDay}
+        open={isDayViewOpen}
+        onOpenChange={setIsDayViewOpen}
+      />
+    </RootLayout>
+  );
+};
+
+export default OverAllPlanGenerator;
