@@ -12,10 +12,11 @@ interface ExportScheduleButtonProps {
     from: string;
     to: string;
   };
+  label?: string;
 }
 
 const ExportScheduleButton = (props: ExportScheduleButtonProps) => {
-  const { date } = props;
+  const { date, label } = props;
   const { currentPark } = useGlobals();
   const { contractId } = currentPark ?? {};
 
@@ -41,7 +42,7 @@ const ExportScheduleButton = (props: ExportScheduleButtonProps) => {
         }
       }
     }).then(() => {
-      message.success("Schedule details exported successfully");
+      message.success("We've got your export request! You'll receive it via email momentarily.");
     }).catch(() => {
       message.error("Failed to export schedule details");
     });
@@ -52,7 +53,9 @@ const ExportScheduleButton = (props: ExportScheduleButtonProps) => {
       icon={<FontAwesomeIcon icon={faFileExport} />}
       loading={exportScheduleDetailsLoading}
       onClick={handleExport}
-    />
+    >
+      {label}
+    </Button>
   );
 };
 
