@@ -1,48 +1,27 @@
-export enum MenuKeys {
-  HOME = "home",
-  PLANNING = "planning",
-  REQUESTS = "requests",
-  REPORTS = "reports",
-  DAY_WISE_PLAN = "day-wise-plan",
-  OVERALL_PLAN = "overall-plan",
-  LOAD_GRAPH = "load-graph",
-  BILLING = "billing",
-  RECS = "recs",
-}
+import { RoutePaths } from "@/common/utils/constants";
 
-export const MENU_ROUTES: Record<MenuKeys, string> = {
-  [MenuKeys.HOME]: "/",
-  [MenuKeys.PLANNING]: "/consumer",
-  [MenuKeys.REQUESTS]: "/generator",
-  [MenuKeys.REPORTS]: "/reports",
-  [MenuKeys.DAY_WISE_PLAN]: "/reports/day-wise-plan",
-  [MenuKeys.OVERALL_PLAN]: "/reports/overall-plan",
-  [MenuKeys.LOAD_GRAPH]: "/reports/load-graph",
-  [MenuKeys.BILLING]: "/billing",
-  [MenuKeys.RECS]: "/recs",
-};
 
 export const routeToMenuMap: {
-  [pathPrefix: string]: { selectedKey: MenuKeys; openKey?: MenuKeys };
+  [pathPrefix: string]: { selectedKey: RoutePaths; openKey?: RoutePaths };
 } = {
-  [MENU_ROUTES[MenuKeys.HOME]]: { selectedKey: MenuKeys.HOME },
-  [MENU_ROUTES[MenuKeys.PLANNING]]: { selectedKey: MenuKeys.PLANNING },
-  [MENU_ROUTES[MenuKeys.REQUESTS]]: { selectedKey: MenuKeys.REQUESTS },
-  [MENU_ROUTES[MenuKeys.REPORTS]]: { selectedKey: MenuKeys.REPORTS },
-  [MENU_ROUTES[MenuKeys.DAY_WISE_PLAN]]: {
-    selectedKey: MenuKeys.DAY_WISE_PLAN,
-    openKey: MenuKeys.REPORTS,
+  [RoutePaths.HOME]: { selectedKey: RoutePaths.HOME },
+  [RoutePaths.PLANNING]: { selectedKey: RoutePaths.PLANNING },
+  [RoutePaths.REQUESTS]: { selectedKey: RoutePaths.REQUESTS },
+  [RoutePaths.REPORTS]: { selectedKey: RoutePaths.REPORTS },
+  [RoutePaths.DAY_WISE_PLAN]: {
+    selectedKey: RoutePaths.DAY_WISE_PLAN,
+    openKey: RoutePaths.REPORTS,
   },
-  [MENU_ROUTES[MenuKeys.OVERALL_PLAN]]: {
-    selectedKey: MenuKeys.OVERALL_PLAN,
-    openKey: MenuKeys.REPORTS,
+  [RoutePaths.OVERALL_PLAN]: {
+    selectedKey: RoutePaths.OVERALL_PLAN,
+    openKey: RoutePaths.REPORTS,
   },
-  [MENU_ROUTES[MenuKeys.LOAD_GRAPH]]: {
-    selectedKey: MenuKeys.LOAD_GRAPH,
-    openKey: MenuKeys.REPORTS,
+  [RoutePaths.LOAD_GRAPH]: {
+    selectedKey: RoutePaths.LOAD_GRAPH,
+    openKey: RoutePaths.REPORTS,
   },
-  [MENU_ROUTES[MenuKeys.BILLING]]: { selectedKey: MenuKeys.BILLING },
-  [MENU_ROUTES[MenuKeys.RECS]]: { selectedKey: MenuKeys.RECS },
+  [RoutePaths.BILLING]: { selectedKey: RoutePaths.BILLING },
+  [RoutePaths.RECS]: { selectedKey: RoutePaths.RECS },
 };
 
 export const getMenuKeysFromPathname = (pathname: string) => {

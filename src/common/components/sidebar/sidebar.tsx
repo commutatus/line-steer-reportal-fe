@@ -6,7 +6,8 @@ import styles from "./sidebar.module.scss";
 import { useGlobals } from "@/common/context/globals";
 import useResponsive, { Breakpoints } from "@/common/hooks/useResponsive";
 import Link from "next/link";
-import { getMenuKeysFromPathname, MenuKeys, MENU_ROUTES } from "./sidebar.helpers";
+import { getMenuKeysFromPathname } from "./sidebar.helpers";
+import { RoutePaths } from "@/common/utils/constants";
 import { useRouter } from "next/router";
 import {
   CalendarOutlined,
@@ -91,31 +92,31 @@ const Sidebar = () => {
     const finalLinks = [];
 
     let firstItem = {
-      key: MenuKeys.PLANNING,
-      label: <Link href={MENU_ROUTES[MenuKeys.PLANNING]}>Planning</Link>,
+      key: RoutePaths.PLANNING,
+      label: <Link href={RoutePaths.PLANNING}>Planning</Link>,
       icon: <CalendarOutlined />,
     };
 
     if (currentUser?.userType === UserType.GENERATOR) {
       firstItem = {
-        key: MenuKeys.REQUESTS,
-        label: <Link href={MENU_ROUTES[MenuKeys.REQUESTS]}>Requests</Link>,
+        key: RoutePaths.REQUESTS,
+        label: <Link href={RoutePaths.REQUESTS}>Requests</Link>,
         icon: <UnorderedListOutlined />,
       };
       finalLinks.push(...[
         {
-          key: MenuKeys.BILLING,
+          key: RoutePaths.BILLING,
           label: (
-            <Link href={MENU_ROUTES[MenuKeys.BILLING]}>
+            <Link href={RoutePaths.BILLING}>
               <CommingSoonLabel label="Billing" isCollapsed={isSidebarCollapsed ?? false} />
             </Link>
           ),
           icon: <DollarOutlined />,
         },
         {
-          key: MenuKeys.RECS,
+          key: RoutePaths.RECS,
           label: (
-            <Link href={MENU_ROUTES[MenuKeys.RECS]}>
+            <Link href={RoutePaths.RECS}>
               <CommingSoonLabel label="RECs" isCollapsed={isSidebarCollapsed ?? false} />
             </Link>
           ),
@@ -127,23 +128,23 @@ const Sidebar = () => {
     return [
       firstItem,
       {
-        key: MenuKeys.REPORTS,
+        key: RoutePaths.REPORTS,
         label: "Reports",
         icon: <BarChartOutlined />,
         children: [
           {
-            key: MenuKeys.DAY_WISE_PLAN,
-            label: <Link href={MENU_ROUTES[MenuKeys.DAY_WISE_PLAN]}>Day Wise Plan</Link>,
+            key: RoutePaths.DAY_WISE_PLAN,
+            label: <Link href={RoutePaths.DAY_WISE_PLAN}>Day Wise Plan</Link>,
             icon: <CalendarOutlined />,
           },
           {
-            key: MenuKeys.OVERALL_PLAN,
-            label: <Link href={MENU_ROUTES[MenuKeys.OVERALL_PLAN]}>Overall Plan</Link>,
+            key: RoutePaths.OVERALL_PLAN,
+            label: <Link href={RoutePaths.OVERALL_PLAN}>Overall Plan</Link>,
             icon: <FileTextOutlined />,
           },
           {
-            key: MenuKeys.LOAD_GRAPH,
-            label: <Link href={MENU_ROUTES[MenuKeys.LOAD_GRAPH]}>Load Graph</Link>,
+            key: RoutePaths.LOAD_GRAPH,
+            label: <Link href={RoutePaths.LOAD_GRAPH}>Load Graph</Link>,
             icon: <LineChartOutlined />,
           },
         ],
