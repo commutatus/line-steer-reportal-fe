@@ -7,15 +7,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
-import { useGlobals } from "@/common/context/globals";
-import { UserType } from "@/common/hooks/useCurrentUser";
 import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
 
 const presentDate = dayjs();
 
 const DayWisePlanConsumer = () => {
-  const { currentUser } = useGlobals();
-  const { userType } = currentUser ?? {};
   const [statusFilter, setStatusFilter] = useState<LoadScheduleDayStatusEnum | "all">("all");
 
   const dateRange = {
@@ -45,14 +41,14 @@ const DayWisePlanConsumer = () => {
   }, [dayWisePlan, statusFilter]);
 
   const tableData = useMemo(() => {
-    const isConsumerUser = userType === UserType.CONSUMER;
     return filteredData.map((item, index) => ({
       key: index,
       date: item.date,
-      plant: isConsumerUser ? item.park?.name : item.factory?.name,
+      park: item.park?.name,
+      factory: item.factory?.name,
       status: item.status,
     }));
-  }, [filteredData, userType]);
+  }, [filteredData]);
 
   const columns = [
     {
@@ -62,9 +58,14 @@ const DayWisePlanConsumer = () => {
       render: (date: string) => dayjs(date).format("MMM DD, YYYY"),
     },
     {
-      title: userType === UserType.CONSUMER ? "Park" : "Factory",
-      dataIndex: "plant",
-      key: "plant",
+      title: "Park",
+      dataIndex: "park",
+      key: "park",
+    },
+    {
+      title: "Factory",
+      dataIndex: "factory",
+      key: "factory",
     },
     {
       title: "Status",
