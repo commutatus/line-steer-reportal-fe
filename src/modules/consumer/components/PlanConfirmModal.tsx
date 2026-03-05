@@ -328,10 +328,9 @@ const PlanConfirmModal: React.FC<PlanConfirmModalProps> = ({
     if (!escalationCutoffDate || !date) {
       return [];
     }
-    return changes.filter((change) => {
-      const [hh, mm] = change.time.split(":").map(Number);
-      const slotDate = dayjs().utc().set("hour", hh).set("minute", mm).add(1, "day");
-      return slotDate.isAfter(escalationCutoffDate);
+    return changes.filter(() => {
+      const currentDate = dayjs().utc().add(1, "day");
+      return currentDate.isAfter(escalationCutoffDate);
     });
   }, [changes, date, escalationCutoffDate]);
 
