@@ -10,14 +10,15 @@ import {
 } from '@/generated/graphql';
 import { useQuery } from '@apollo/client';
 import { GET_LOAD_SCHEDULED_DAYS } from '@/common/graphql/consumer.graphql';
-import { Table, Tag, Select } from 'antd';
+import { Table, Tag, Select, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { fillConfig, PlanStatus } from '@/common/constants/plan-status';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useGlobals } from '@/common/context/globals';
-import ExportScheduleButton from '../consumer/components/ExportScheduleButton';
+import ExportFactoryDetailsButton from '../consumer/components/ExportFactoryDetailsButton';
 import DayViewModal from '@/common/components/day-view-modal/day-view-modal';
 import { LoadScheduleDay } from '@/common/types/load-schedule';
+import { FilterOutlined } from '@ant-design/icons';
 
 const presentDate = dayjs();
 
@@ -137,7 +138,7 @@ const OverAllPlanGenerator = () => {
       key: 'export',
       width: 60,
       render: (_: unknown, record: TableRow) => (
-        <ExportScheduleButton date={{ from: record.date, to: record.date }} />
+        <ExportFactoryDetailsButton date={{ from: record.date, to: record.date }} />
       ),
     });
 
@@ -182,14 +183,14 @@ const OverAllPlanGenerator = () => {
               />
               {selectedParkId && (
                 <>
-                  <ExportScheduleButton
+                  <ExportFactoryDetailsButton
                     label="Previous 7 Days"
                     date={{
                       from: presentDate.subtract(7, 'day').format('YYYY-MM-DD'),
                       to: presentDate.format('YYYY-MM-DD'),
                     }}
                   />
-                  <ExportScheduleButton
+                  <ExportFactoryDetailsButton
                     label="Next 7 Days"
                     date={{
                       from: presentDate.format('YYYY-MM-DD'),
@@ -201,14 +202,37 @@ const OverAllPlanGenerator = () => {
             </div>
           </div>
           <div className="p-6">
-            <Table
-              dataSource={selectedParkId ? tableData: []}
-              columns={columns}
-              pagination={false}
-              loading={isLoading}
-              scroll={{ x: 'max-content' }}
-              size="small"
-            />
+            {
+              selectedParkId ? (
+                <Table
+                  dataSource={selectedParkId ? tableData: []}
+                  columns={columns}
+                  pagination={false}
+                  loading={isLoading}
+                  scroll={{ x: 'max-content' }}
+                  size="small"
+                />
+              )
+              : (
+                <Empty
+                  image={
+                    <FilterOutlined
+                      className="text-gray-300! text-[64px]"
+                    />
+                  }
+                  description={
+                    <div className="text-center">
+                      <p className="text-lg font-medium mb-1">
+                        Select a Park to get started
+                      </p>
+                      <p className="text-gray-500 text-sm">
+                        Choose a park from the dropdown above to view its factories and plans.
+                      </p>
+                    </div>
+                  }
+                />
+              )
+            }
           </div>
         </div>
       </div>
