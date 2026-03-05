@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { useApolloClient } from "@apollo/client";
 import useAuth from "./useAuth";
 import { notification } from "antd";
 import { AuthPageStates } from "@/modules/auth";
@@ -24,6 +25,7 @@ type GlobalsContextType = Partial<{
 const GlobalsContext = createContext<GlobalsContextType>({});
 
 export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
+  const apolloClient = useApolloClient();
   const authContext = useAuth();
   const [notificationApi, notificationContextHolder] =
     notification.useNotification();
@@ -55,8 +57,10 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleLogout = useCallback(() => {
     authContext.logout();
+    currentPark.resetPark();
+    apolloClient.clearStore(); // Clear Apollo cache on logout
     setAuthPageState?.(AuthPageStates.login);
-  }, [authContext, setAuthPageState]);
+  }, [authContext, currentPark, apolloClient, setAuthPageState]);
 
   const contextValue = useMemo(() => {
     return {

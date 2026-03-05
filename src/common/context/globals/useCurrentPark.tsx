@@ -112,6 +112,11 @@ const useCurrentPark = ({
     []
   );
 
+  const resetPark = useCallback(() => {
+    setSelectedParkId(null);
+    setSelectedFactoryId(null);
+  }, []);
+
   useEffect(() => {
     if (!selectedParkId && parks.length > 0) {
       setSelectedParkId(parks[0].id);
@@ -128,6 +133,7 @@ const useCurrentPark = ({
     contractId,
     selectPark,
     selectFactory,
+    resetPark,
     contractsLoading,
   };
 };
