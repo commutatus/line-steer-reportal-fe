@@ -14,7 +14,6 @@ const presentDate = dayjs();
 const TablePlan = (props: TablePlanProps) => {
   const { loadScheduledDays, onDayClick, currentDate } = props;
   const dataSource = loadScheduledDays.map((loadScheduledDay) => {
-    const totalMW = loadScheduledDay.loadSchedules?.reduce((sum, schedule) => sum + (schedule.load || 0), 0) || 0;
     const dayjsDate = dayjs(loadScheduledDay.date);
 
     let fillStatus: PlanStatus = loadScheduledDay.status ?? PlanStatus.NotAvailable;
@@ -27,7 +26,6 @@ const TablePlan = (props: TablePlanProps) => {
       date: loadScheduledDay.date,
       dayOfWeek: dayjsDate.format("ddd"),
       fillStatus,
-      totalMW,
     };
   });
 
@@ -57,15 +55,6 @@ const TablePlan = (props: TablePlanProps) => {
           </Tag>
         );
       },
-    },
-    {
-      title: "Total MW",
-      dataIndex: "totalMW",
-      key: "totalMW",
-      align: "right" as const,
-      render: (val: number) => (
-        <span className="font-mono">{val > 0 ? val.toFixed(2) : "—"}</span>
-      ),
     },
   ];
 

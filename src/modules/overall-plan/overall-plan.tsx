@@ -17,4 +17,4 @@ const OverAllPlan = () => {
   )
 }
 
-export default OverAllPlan
+export default OverAllPlan;
