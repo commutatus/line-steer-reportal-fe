@@ -15,7 +15,6 @@ const presentDate = dayjs();
 interface TableRow {
   key: number;
   date: string;
-  total: number;
   [key: string]: string | number;
 }
 
@@ -71,7 +70,6 @@ const OverallPlanConsumer = () => {
       const row: TableRow = {
         key: index,
         date: item.date,
-        total: userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
       };
 
       if (userType === UserType.CONSUMER) {
@@ -122,15 +120,6 @@ const OverallPlanConsumer = () => {
         });
       });
     }
-
-    cols.push({
-      title: 'Total',
-      dataIndex: 'total',
-      key: 'total',
-      align: 'right',
-      render: (val: number | undefined) => <span className="font-semibold">{val?.toFixed(2) ?? '0.00'}</span>,
-    });
-
     return cols;
   }, [availableParks, availableFactories, userType]);
 

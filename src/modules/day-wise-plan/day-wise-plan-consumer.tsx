@@ -50,7 +50,6 @@ const DayWisePlanConsumer = () => {
       key: index,
       date: item.date,
       plant: isConsumerUser ? item.park?.name : item.factory?.name,
-      totalLoad: item.totalLoad,
       status: item.status,
     }));
   }, [filteredData, userType]);
@@ -66,13 +65,6 @@ const DayWisePlanConsumer = () => {
       title: userType === UserType.CONSUMER ? "Park" : "Factory",
       dataIndex: "plant",
       key: "plant",
-    },
-    {
-      title: "Total Load (MW)",
-      dataIndex: "totalLoad",
-      key: "totalLoad",
-      align: "right" as const,
-      render: (val: number) => val.toFixed(2),
     },
     {
       title: "Status",

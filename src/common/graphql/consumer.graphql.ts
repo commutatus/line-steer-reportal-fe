@@ -95,6 +95,12 @@ export const EXPORT_SCHEDULE_DETAILS_MUTATION = gql`
   }
 `;
 
+export const EXPORT_FACTORY_DETAILS_MUTATION = gql`
+  mutation ExportFactoryDetails($input: ExportFactoryDetailsInput!) {
+    exportFactoryDetails(input: $input)
+  }
+`;
+
 export const BULK_UPDATE_LOAD_SCHEDULES_MUTATION = gql`
   mutation BulkUpdateLoadSchedules($input: BulkUpdateInput!) {
     bulkUpdateLoadSchedules(input: $input) {
