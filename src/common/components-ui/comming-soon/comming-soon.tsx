@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import RootLayout from "@/common/layouts/root-layout";
 import { useGlobals } from "@/common/context/globals";
 import { UserType } from "@/common/hooks/useCurrentUser";
+import { RoutePaths } from "@/common/utils/constants";
 
 type ComingSoonPageProps = {
   pageTitle?: string;
@@ -13,13 +14,13 @@ type ComingSoonPageProps = {
 const getBackButtonDetails = (userType: UserType) => {
   let result = {
     label: "Planning",
-    pathname: "/consumer"
+    pathname: RoutePaths.PLANNING,
   }
 
   if (userType === UserType.GENERATOR) {
     result = {
       label: "Requests",
-      pathname: "/generator",
+      pathname: RoutePaths.REQUESTS,
     }
   }
 
