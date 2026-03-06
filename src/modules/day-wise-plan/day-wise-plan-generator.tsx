@@ -44,8 +44,8 @@ const DayWisePlanGenerator = () => {
     [Dayjs, Dayjs]
   >([presentDate.startOf("month"), presentDate.endOf("month")]);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
-  const [selectedLoadScheduleDay, setSelectedLoadScheduleDay] =
-    useState<LoadScheduleDay | null>(null);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] =
+    useState<number | null>(null);
 
   const dateRange = useMemo(
     () => ({
@@ -96,7 +96,7 @@ const DayWisePlanGenerator = () => {
   }, [filteredData]);
 
   const handleStatusClick = (record: LoadScheduleDay) => {
-    setSelectedLoadScheduleDay(record);
+    setSelectedLoadScheduleDayId(Number(record.id));
     setIsDayViewOpen(true);
   };
 
@@ -226,7 +226,7 @@ const DayWisePlanGenerator = () => {
         </div>
       </div>
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}
       />
