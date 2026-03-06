@@ -1,12 +1,14 @@
 import { useMemo } from "react";
-import { Modal, Table, Tabs } from "antd";
+import { Modal, Spin, Table, Tabs } from "antd";
 import ReactECharts from "echarts-for-react";
 import dayjs from "dayjs";
-import { LoadScheduleDay } from "@/common/types/load-schedule";
 import { convertToUTCHoursFormat } from "@/common/utils/helpers";
+import { useQuery } from "@apollo/client";
+import { GetLoadScheduledDayDetailsQuery, GetLoadScheduledDayDetailsQueryVariables } from "@/generated/graphql";
+import { GET_LOAD_SCHEDULED_DAY_DETAILS } from "@/common/graphql/consumer.graphql";
 
 interface DayViewModalProps {
-  loadScheduleDay: LoadScheduleDay | null;
+  loadScheduleDayId?: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -21,10 +23,16 @@ interface HourRow {
 }
 
 const DayViewModal = ({
-  loadScheduleDay,
+  loadScheduleDayId,
   open,
   onOpenChange,
 }: DayViewModalProps) => {
+  const { data: detailsData, loading: detailsLoading } = useQuery<GetLoadScheduledDayDetailsQuery, GetLoadScheduledDayDetailsQueryVariables>(GET_LOAD_SCHEDULED_DAY_DETAILS, {
+    variables: { id: loadScheduleDayId ?? 0 },
+    skip: !loadScheduleDayId || !open,
+  });
+
+  const loadScheduleDay = detailsData?.loadScheduleDays?.data?.[0] ?? null;
   const schedules = loadScheduleDay?.loadSchedules;
 
   const formattedDate = useMemo(() => {
@@ -195,7 +203,13 @@ const DayViewModal = ({
       destroyOnHidden
       centered
     >
-      <Tabs defaultActiveKey="grid" items={tabItems} />
+      {detailsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Tabs defaultActiveKey="grid" items={tabItems} />
+      )}
     </Modal>
   );
 };

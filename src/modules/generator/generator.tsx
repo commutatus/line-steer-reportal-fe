@@ -6,7 +6,6 @@ import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
-import { LoadScheduleDay } from "@/common/types/load-schedule";
 import GeneratorFilters from "@/common/components/generator-filters";
 import DayViewModal from "@/common/components/day-view-modal";
 import { FilterOutlined } from "@ant-design/icons";
@@ -17,12 +16,12 @@ import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryT
 const presentDate = dayjs();
 
 const Generator = () => {
-  const { currentPark } = useGlobals();
+  const { currentPark, notificationApi } = useGlobals();
   const { parkId, factoryId } = currentPark ?? {};
 
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] = useState<number | null>(null);
 
   const hasSelection = Boolean(parkId && factoryId);
 
@@ -46,16 +45,16 @@ const Generator = () => {
 
   const loadScheduledDays = useMemo(() => data?.loadScheduleDays?.data ?? [], [data]);
 
-  const selectedLoadScheduleDay = useMemo((): LoadScheduleDay | null => {
-    if (!selectedDate) {
-      return null;
-    }
-    return loadScheduledDays.find((day) => day.date === selectedDate) ?? null;
-  }, [selectedDate, loadScheduledDays]);
-
   const handleDayClick = (date: string) => {
-    setSelectedDate(date);
-    setIsDayViewOpen(true);
+    const loadScheduleDay = loadScheduledDays.find((day) => day.date === date);
+    if (loadScheduleDay) {
+      setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
+      setIsDayViewOpen(true);
+    } else {
+      notificationApi?.error({
+        message: "No plan found for this date",
+      });
+    }
   };
 
   const handleDateChange = (date: dayjs.Dayjs) => {
@@ -137,7 +136,7 @@ const Generator = () => {
       </div>
 
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}
       />

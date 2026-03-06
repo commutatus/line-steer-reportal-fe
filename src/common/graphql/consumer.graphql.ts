@@ -1,12 +1,33 @@
 import { gql } from "@apollo/client";
 
 export const GET_LOAD_SCHEDULED_DAYS = gql`
-  query GetLoadScheduleDays($filters: LoadScheduleDayFilterInput, $sort: 
+  query GetLoadScheduleDays ($filters: LoadScheduleDayFilterInput, $sort: 
 LoadScheduleDaySortInput) {
-    loadScheduleDays(filters: $filters, sort: $sort, pagination: {
+    loadScheduleDays (filters: $filters, sort: $sort, pagination: {
       perPage: 31,
       pageNo: 1,
     }) {
+      data {
+        date
+        id
+        status
+        totalLoad
+        park {
+          id
+          name
+        }
+        factory {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LOAD_SCHEDULED_DAY_DETAILS = gql`
+  query GetLoadScheduledDayDetails($id: Int!) {
+    loadScheduleDays(filters: { ids: [$id] }) {
       data {
         date
         id
@@ -24,15 +45,6 @@ LoadScheduleDaySortInput) {
             escalationCutoffTime
           }
           pastAverageLoad
-        }
-        factory {
-          id
-          name
-        }
-        park {
-          id
-          name
-          city
         }
       }
     }
