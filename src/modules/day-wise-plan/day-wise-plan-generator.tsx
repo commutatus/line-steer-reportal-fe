@@ -8,7 +8,7 @@ import {
   LoadScheduleDayStatusEnum,
   SortDirection,
 } from "@/generated/graphql";
-import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
+import { fillConfig } from "@/common/constants/plan-status";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs, { Dayjs } from "dayjs";
 import { useQuery } from "@apollo/client";
@@ -152,7 +152,7 @@ const DayWisePlanGenerator = () => {
         status: LoadScheduleDayStatusEnum,
         record: (typeof tableData)[number]
       ) => {
-        const config = fillConfig[status as PlanStatus];
+        const config = fillConfig[status];
         if (!config) {
           return <span className="text-gray-400">—</span>;
         }
@@ -160,7 +160,7 @@ const DayWisePlanGenerator = () => {
           <Tag
             color={config.color}
             className="cursor-pointer"
-            onClick={() => handleStatusClick(record.raw as LoadScheduleDay)}
+            onClick={() => handleStatusClick(record.raw)}
           >
             <FontAwesomeIcon icon={config.icon} /> {config.label}
           </Tag>
