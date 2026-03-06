@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Empty, message, Tabs } from "antd";
+import { Empty, Tabs } from "antd";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -16,7 +16,7 @@ import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryT
 const presentDate = dayjs();
 
 const Generator = () => {
-  const { currentPark } = useGlobals();
+  const { currentPark, notificationApi } = useGlobals();
   const { parkId, factoryId } = currentPark ?? {};
 
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
@@ -51,7 +51,9 @@ const Generator = () => {
       setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
       setIsDayViewOpen(true);
     } else {
-      message.error("No plan found for this date");
+      notificationApi?.error({
+        message: "No plan found for this date",
+      });
     }
   };
 
