@@ -46,31 +46,29 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
 
   const loadScheduleDayDetails = detailsData?.loadScheduleDays?.data?.[0] ?? null;
 
-  const initialData = useMemo((): TimeSlot[] | undefined => {
-    if (!loadScheduleDayDetails?.loadSchedules) return undefined;
-    return loadScheduleDayDetails.loadSchedules.map((schedule) => ({
-      time: schedule.startTime || '',
-      mw: schedule.load ?? null,
-      deviation: schedule.factory?.thresholdPercentage ?? null,
-      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
-      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
-    }));
-  }, [loadScheduleDayDetails]);
-
-  const averageData = useMemo((): TimeSlot[] | undefined => {
-    if (!loadScheduleDayDetails?.loadSchedules) return undefined;
-    return loadScheduleDayDetails.loadSchedules.map((schedule) => ({
-      time: schedule.startTime || '',
-      mw: schedule.pastAverageLoad ?? null,
-      deviation: schedule.factory?.thresholdPercentage ?? null,
-      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
-      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
-    }));
-  }, [loadScheduleDayDetails]);
-
-  const loadScheduleIds = useMemo((): string[] | undefined => {
-    if (!loadScheduleDayDetails?.loadSchedules) return undefined;
-    return loadScheduleDayDetails.loadSchedules.map((schedule) => schedule.id);
+  const { initialData, averageData, loadScheduleIds } = useMemo(() => {
+    const initialData: TimeSlot[] = [];
+    const averageData: TimeSlot[] = [];
+    const loadScheduleIds: string[] = [];
+    if (!loadScheduleDayDetails?.loadSchedules) return { initialData, averageData, loadScheduleIds };
+    for (const schedule of loadScheduleDayDetails.loadSchedules) {
+      initialData.push({
+        time: schedule.startTime || '',
+        mw: schedule.load ?? null,
+        deviation: schedule.factory?.thresholdPercentage ?? null,
+        maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+        escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
+      });
+      averageData.push({
+        time: schedule.startTime || '',
+        mw: schedule.pastAverageLoad ?? null,
+        deviation: schedule.factory?.thresholdPercentage ?? null,
+        maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+        escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
+      });
+      loadScheduleIds.push(schedule.id);
+    }
+    return { initialData, averageData, loadScheduleIds };
   }, [loadScheduleDayDetails]);
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots);
