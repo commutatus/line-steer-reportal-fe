@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Empty, Tabs } from "antd";
+import { Empty, message, Tabs } from "antd";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -49,8 +49,10 @@ const Generator = () => {
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === date);
     if (loadScheduleDay) {
       setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
+      setIsDayViewOpen(true);
+    } else {
+      message.error("No plan found for this date");
     }
-    setIsDayViewOpen(true);
   };
 
   const handleDateChange = (date: dayjs.Dayjs) => {
