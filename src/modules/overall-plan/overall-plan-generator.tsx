@@ -1,5 +1,5 @@
 import RootLayout from '@/common/layouts/root-layout';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import {
   GetLoadScheduleDaysQuery,
@@ -12,12 +12,11 @@ import { useQuery } from '@apollo/client';
 import { GET_LOAD_SCHEDULED_DAYS } from '@/common/graphql/consumer.graphql';
 import { Table, Tag, Select, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { fillConfig, PlanStatus } from '@/common/constants/plan-status';
+import { fillConfig } from '@/common/constants/plan-status';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useGlobals } from '@/common/context/globals';
 import ExportFactoryDetailsButton from '../consumer/components/ExportFactoryDetailsButton';
 import DayViewModal from '@/common/components/day-view-modal/day-view-modal';
-import { LoadScheduleDay } from '@/common/types/load-schedule';
 import { FilterOutlined } from '@ant-design/icons';
 
 const presentDate = dayjs();
@@ -33,7 +32,7 @@ const OverAllPlanGenerator = () => {
   const { parks } = currentPark ?? {};
   const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
-  const [selectedDayKey, setSelectedDayKey] = useState<{ date: string; factoryId: string } | null>(null);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] = useState<number | null>(null);
 
   const dateRange = {
     from: presentDate.startOf('month').format('YYYY-MM-DD'),
@@ -94,6 +93,16 @@ const OverAllPlanGenerator = () => {
     return Array.from(dateMap.values());
   }, [loadScheduleDays]);
 
+  const handleStatusClick = useCallback((date: string, factoryId: string) => {
+    const loadScheduleDay = loadScheduleDays.find(
+      (day) => day.date === date && day.factory?.id === factoryId
+    );
+    if (loadScheduleDay) {
+      setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
+    }
+    setIsDayViewOpen(true);
+  }, [loadScheduleDays]);
+
   const columns: ColumnsType<TableRow> = useMemo(() => {
     const cols: ColumnsType<TableRow> = [
       {
@@ -116,7 +125,7 @@ const OverAllPlanGenerator = () => {
           if (!status) {
             return <span className="text-gray-400">—</span>;
           }
-          const config = fillConfig[status as PlanStatus];
+          const config = fillConfig[status];
           if (!config) {
             return <span className="text-gray-400">—</span>;
           }
@@ -143,21 +152,7 @@ const OverAllPlanGenerator = () => {
     });
 
     return cols;
-  }, [availableFactories]);
-
-  const selectedLoadScheduleDay = useMemo((): LoadScheduleDay | null => {
-    if (!selectedDayKey) {
-      return null;
-    }
-    return loadScheduleDays.find(
-      (day) => day.date === selectedDayKey.date && day.factory?.id === selectedDayKey.factoryId
-    ) ?? null;
-  }, [selectedDayKey, loadScheduleDays]);
-
-  const handleStatusClick = (date: string, factoryId: string) => {
-    setSelectedDayKey({ date, factoryId });
-    setIsDayViewOpen(true);
-  };
+  }, [availableFactories, handleStatusClick]);
 
   const parkOptions = useMemo(() => {
     return (parks ?? []).map((park) => ({
@@ -237,7 +232,7 @@ const OverAllPlanGenerator = () => {
         </div>
       </div>
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}
       />

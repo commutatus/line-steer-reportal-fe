@@ -8,7 +8,7 @@ import {
   LoadScheduleDayStatusEnum,
   SortDirection,
 } from "@/generated/graphql";
-import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
+import { fillConfig } from "@/common/constants/plan-status";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs, { Dayjs } from "dayjs";
 import { useQuery } from "@apollo/client";
@@ -44,8 +44,8 @@ const DayWisePlanGenerator = () => {
     [Dayjs, Dayjs]
   >([presentDate.startOf("month"), presentDate.endOf("month")]);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
-  const [selectedLoadScheduleDay, setSelectedLoadScheduleDay] =
-    useState<LoadScheduleDay | null>(null);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] =
+    useState<number | null>(null);
 
   const dateRange = useMemo(
     () => ({
@@ -96,7 +96,7 @@ const DayWisePlanGenerator = () => {
   }, [filteredData]);
 
   const handleStatusClick = (record: LoadScheduleDay) => {
-    setSelectedLoadScheduleDay(record);
+    setSelectedLoadScheduleDayId(Number(record.id));
     setIsDayViewOpen(true);
   };
 
@@ -152,7 +152,7 @@ const DayWisePlanGenerator = () => {
         status: LoadScheduleDayStatusEnum,
         record: (typeof tableData)[number]
       ) => {
-        const config = fillConfig[status as PlanStatus];
+        const config = fillConfig[status];
         if (!config) {
           return <span className="text-gray-400">—</span>;
         }
@@ -160,7 +160,7 @@ const DayWisePlanGenerator = () => {
           <Tag
             color={config.color}
             className="cursor-pointer"
-            onClick={() => handleStatusClick(record.raw as LoadScheduleDay)}
+            onClick={() => handleStatusClick(record.raw)}
           >
             <FontAwesomeIcon icon={config.icon} /> {config.label}
           </Tag>
@@ -226,7 +226,7 @@ const DayWisePlanGenerator = () => {
         </div>
       </div>
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}
       />
