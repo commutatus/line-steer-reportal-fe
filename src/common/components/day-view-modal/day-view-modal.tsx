@@ -28,7 +28,7 @@ const DayViewModal = ({
   onOpenChange,
 }: DayViewModalProps) => {
   const { data: detailsData, loading: detailsLoading } = useQuery<GetLoadScheduledDayDetailsQuery, GetLoadScheduledDayDetailsQueryVariables>(GET_LOAD_SCHEDULED_DAY_DETAILS, {
-    variables: { id: loadScheduleDayId! },
+    variables: { id: loadScheduleDayId ?? 0 },
     skip: !loadScheduleDayId || !open,
   });
 
