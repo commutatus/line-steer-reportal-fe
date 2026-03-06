@@ -28,7 +28,7 @@ interface TableRow {
 }
 
 const OverAllPlanGenerator = () => {
-  const { currentPark } = useGlobals();
+  const { currentPark, notificationApi } = useGlobals();
   const { parks } = currentPark ?? {};
   const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
@@ -97,11 +97,15 @@ const OverAllPlanGenerator = () => {
     const loadScheduleDay = loadScheduleDays.find(
       (day) => day.date === date && day.factory?.id === factoryId
     );
-    if (loadScheduleDay) {
+    if (loadScheduleDay?.id) {
       setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
+      setIsDayViewOpen(true);
+    } else {
+      notificationApi?.error({
+        message: "No plan found for this date",
+      });
     }
-    setIsDayViewOpen(true);
-  }, [loadScheduleDays]);
+  }, [loadScheduleDays, notificationApi]);
 
   const columns: ColumnsType<TableRow> = useMemo(() => {
     const cols: ColumnsType<TableRow> = [

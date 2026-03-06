@@ -16,7 +16,7 @@ import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryT
 const presentDate = dayjs();
 
 const Generator = () => {
-  const { currentPark } = useGlobals();
+  const { currentPark, notificationApi } = useGlobals();
   const { parkId, factoryId } = currentPark ?? {};
 
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(presentDate);
@@ -49,8 +49,12 @@ const Generator = () => {
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === date);
     if (loadScheduleDay) {
       setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
+      setIsDayViewOpen(true);
+    } else {
+      notificationApi?.error({
+        message: "No plan found for this date",
+      });
     }
-    setIsDayViewOpen(true);
   };
 
   const handleDateChange = (date: dayjs.Dayjs) => {
