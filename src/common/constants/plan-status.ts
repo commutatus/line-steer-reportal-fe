@@ -19,31 +19,31 @@ export const fillConfig: Record<
   [PlanStatus.Pending]: {
     color: "var(--color-blue-400)",
     label: "Pending",
-    bgClass: "bg-blue-200",
+    bgClass: "bg-blue-200!",
     icon: faPlus,
   },
   [PlanStatus.InProgress]: {
     color: "var(--color-amber-600)",
     label: "In Progress",
-    bgClass: "bg-yellow-100",
+    bgClass: "bg-yellow-100!",
     icon: faSpinner,
   },
   [PlanStatus.Ready]: {
     color: "var(--color-green-600)",
     label: "Planned",
-    bgClass: "bg-green-200",
+    bgClass: "bg-green-200!",
     icon: faCheck,
   },
   [PlanStatus.NotAvailable]: {
     color: "var(--color-gray-500)",
     label: "Not Available",
-    bgClass: "bg-gray-200",
+    bgClass: "bg-gray-200!",
     icon: faBan,
   },
   [PlanStatus.PastDay]: {
     color: "var(--color-gray-500)",
     label: "Past Day",
-    bgClass: "bg-gray-200",
+    bgClass: "bg-gray-200!",
     icon: faCheck,
   },
 };

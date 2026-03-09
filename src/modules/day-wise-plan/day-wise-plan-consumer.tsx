@@ -1,13 +1,12 @@
 import { useState, useMemo } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Table, Select, Tag } from "antd";
+import { Table, Select } from "antd";
 import { GetDayWisePlanQueryQuery, GetDayWisePlanQueryQueryVariables, LoadScheduleDaySortColumn, LoadScheduleDayStatusEnum, SortDirection } from "@/generated/graphql";
-import { fillConfig } from "@/common/constants/plan-status";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
 import { DAY_WISE_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
 import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
+import StatusTag from "@/common/status-tag/status-tag";
 
 const presentDate = dayjs();
 
@@ -72,12 +71,7 @@ const DayWisePlanConsumer = () => {
       dataIndex: "status",
       key: "status",
       render: (status: LoadScheduleDayStatusEnum) => {
-        const config = fillConfig[status];
-        return (
-          <Tag color={config.color}>
-            <FontAwesomeIcon icon={config.icon} /> {config.label}
-          </Tag>
-        );
+        return <StatusTag status={status} />;
       },
     },
   ];

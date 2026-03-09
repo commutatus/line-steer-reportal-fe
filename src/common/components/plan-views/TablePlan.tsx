@@ -1,8 +1,8 @@
 import dayjs, { Dayjs } from "dayjs";
-import { Empty, Table, Tag } from "antd";
-import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Empty, Table } from "antd";
+import { PlanStatus } from "@/common/constants/plan-status";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
+import StatusTag from "@/common/status-tag/status-tag";
 
 interface TablePlanProps {
   loadScheduledDays: LoadScheduleDay[];
@@ -48,12 +48,7 @@ const TablePlan = (props: TablePlanProps) => {
       dataIndex: "fillStatus",
       key: "fillStatus",
       render: (status: PlanStatus) => {
-        const config = fillConfig[status];
-        return (
-          <Tag color={config.color}>
-            <FontAwesomeIcon icon={config.icon} /> {config.label}
-          </Tag>
-        );
+        return <StatusTag status={status} />;
       },
     },
   ];
