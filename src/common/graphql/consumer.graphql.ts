@@ -101,6 +101,41 @@ export const OVERALL_PLAN_QUERY = gql`
   }
 `;
 
+export const GET_SLOT_LEVEL_LOAD_DATA = gql`
+  query GetSlotLevelLoadData($filters: LoadScheduleDayFilterInput, $sort: LoadScheduleDaySortInput) {
+    loadScheduleDays(filters: $filters, sort: $sort) {
+      data {
+        date
+        id
+        status
+        totalLoad
+        park {
+          id
+          name
+        }
+        factory {
+          id
+          name
+        }
+        loadSchedules {
+          id
+          startTime
+          endTime
+          load
+          park {
+            id
+            name
+          }
+          factory {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const EXPORT_SCHEDULE_DETAILS_MUTATION = gql`
   mutation ExportScheduleDetails($input: ExportScheduleDetailsInput!) {
     exportScheduleDetails(input: $input)
