@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import RootLayout from "@/common/layouts/root-layout";
-import { Table, Select, Tag, DatePicker } from "antd";
+import { Table, Select, DatePicker } from "antd";
 import {
   GetLoadScheduleDaysQuery,
   GetLoadScheduleDaysQueryVariables,
@@ -8,8 +8,6 @@ import {
   LoadScheduleDayStatusEnum,
   SortDirection,
 } from "@/generated/graphql";
-import { fillConfig, PlanStatus } from "@/common/constants/plan-status";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs, { Dayjs } from "dayjs";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
@@ -17,6 +15,7 @@ import { useGlobals } from "@/common/context/globals";
 import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
 import DayViewModal from "@/common/components/day-view-modal/day-view-modal";
 import { LoadScheduleDay } from "@/common/types/load-schedule";
+import StatusTag from "@/common/status-tag/status-tag";
 
 const { RangePicker } = DatePicker;
 
@@ -44,8 +43,8 @@ const DayWisePlanGenerator = () => {
     [Dayjs, Dayjs]
   >([presentDate.startOf("month"), presentDate.endOf("month")]);
   const [isDayViewOpen, setIsDayViewOpen] = useState(false);
-  const [selectedLoadScheduleDay, setSelectedLoadScheduleDay] =
-    useState<LoadScheduleDay | null>(null);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] =
+    useState<number | null>(null);
 
   const dateRange = useMemo(
     () => ({
@@ -96,7 +95,7 @@ const DayWisePlanGenerator = () => {
   }, [filteredData]);
 
   const handleStatusClick = (record: LoadScheduleDay) => {
-    setSelectedLoadScheduleDay(record);
+    setSelectedLoadScheduleDayId(Number(record.id));
     setIsDayViewOpen(true);
   };
 
@@ -152,18 +151,11 @@ const DayWisePlanGenerator = () => {
         status: LoadScheduleDayStatusEnum,
         record: (typeof tableData)[number]
       ) => {
-        const config = fillConfig[status as PlanStatus];
-        if (!config) {
-          return <span className="text-gray-400">—</span>;
-        }
         return (
-          <Tag
-            color={config.color}
-            className="cursor-pointer"
-            onClick={() => handleStatusClick(record.raw as LoadScheduleDay)}
-          >
-            <FontAwesomeIcon icon={config.icon} /> {config.label}
-          </Tag>
+          <StatusTag
+            status={status}
+            onClick={() => handleStatusClick(record.raw)}
+          />
         );
       },
     },
@@ -226,7 +218,7 @@ const DayWisePlanGenerator = () => {
         </div>
       </div>
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewOpen}
         onOpenChange={setIsDayViewOpen}
       />

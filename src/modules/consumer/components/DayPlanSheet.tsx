@@ -1,20 +1,18 @@
 import { useState, useMemo, useEffect } from "react";
-import { Drawer, Button, Space, InputNumber, Table, message } from "antd";
+import { Drawer, Button, Space, InputNumber, Table, message, Spin } from "antd";
 import { TimeSlot } from "@/common/utils/data/types";
-import { useApolloClient, useMutation } from "@apollo/client";
-import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables } from "@/generated/graphql";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables, GetLoadScheduledDayDetailsQuery, GetLoadScheduledDayDetailsQueryVariables } from "@/generated/graphql";
 import PlanConfirmModal from "./PlanConfirmModal";
 import ExportScheduleButton from "./ExportScheduleButton";
-import { BULK_UPDATE_LOAD_SCHEDULES_MUTATION } from "@/common/graphql/consumer.graphql";
+import { BULK_UPDATE_LOAD_SCHEDULES_MUTATION, GET_LOAD_SCHEDULED_DAY_DETAILS } from "@/common/graphql/consumer.graphql";
 
 interface DayPlanSheetProps {
   date: string | null;
+  loadScheduleDayId: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (date: string, timeSlots: TimeSlot[]) => void;
-  initialData?: TimeSlot[];
-  averageData?: TimeSlot[];
-  loadScheduleIds?: string[];
+  onSave: () => void;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -38,21 +36,54 @@ interface HourRow {
 }
 
 const DayPlanSheet = (props: DayPlanSheetProps) => {
-  const { date, open, onOpenChange, onSave, initialData, averageData, loadScheduleIds } = props;
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() =>
-    initialData || generateTimeSlots()
-  );
+  const { date, loadScheduleDayId, open, onOpenChange, onSave } = props;
   const client = useApolloClient();
+
+  const { data: detailsData, loading: detailsLoading } = useQuery<GetLoadScheduledDayDetailsQuery, GetLoadScheduledDayDetailsQueryVariables>(GET_LOAD_SCHEDULED_DAY_DETAILS, {
+    variables: { id: loadScheduleDayId ?? 0 },
+    skip: !loadScheduleDayId || !open,
+  });
+
+  const loadScheduleDayDetails = detailsData?.loadScheduleDays?.data?.[0] ?? null;
+
+  const { initialData, averageData, loadScheduleIds } = useMemo(() => {
+    const initialData: TimeSlot[] = [];
+    const averageData: TimeSlot[] = [];
+    const loadScheduleIds: string[] = [];
+    if (!loadScheduleDayDetails?.loadSchedules) return { initialData, averageData, loadScheduleIds };
+    for (const schedule of loadScheduleDayDetails.loadSchedules) {
+      initialData.push({
+        time: schedule.startTime || '',
+        mw: schedule.load ?? null,
+        deviation: schedule.factory?.thresholdPercentage ?? null,
+        maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+        escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
+      });
+      averageData.push({
+        time: schedule.startTime || '',
+        mw: schedule.pastAverageLoad ?? null,
+        deviation: schedule.factory?.thresholdPercentage ?? null,
+        maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
+        escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
+      });
+      loadScheduleIds.push(schedule.id);
+    }
+    return { initialData, averageData, loadScheduleIds };
+  }, [loadScheduleDayDetails]);
+
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots);
   const [bulkUpdateLoadSchedules, { 
     loading: bulkUpdateLoadSchedulesLoading,
   }] = useMutation<BulkUpdateLoadSchedulesMutation, BulkUpdateLoadSchedulesMutationVariables>(BULK_UPDATE_LOAD_SCHEDULES_MUTATION);
   const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    if (date) {
-      setTimeSlots(initialData || generateTimeSlots());
+    if (initialData) {
+      setTimeSlots(initialData);
+    } else {
+      setTimeSlots(generateTimeSlots());
     }
-  }, [date, initialData]);
+  }, [initialData]);
 
   const handleMwChange = (index: number, value: number | null) => {
     if (value !== null && value < 0) return;
@@ -93,7 +124,7 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
       client.cache.evict({ fieldName: 'contractLogs' });
       client.cache.gc();
       message.success(`Saved plan for ${date}`);
-      onSave(date, timeSlots);
+      onSave();
       setShowConfirm(false);
       onOpenChange(false);
     } catch {
@@ -186,14 +217,20 @@ const DayPlanSheet = (props: DayPlanSheetProps) => {
           </Space>
         }
       >
-        <Table
-          dataSource={dataSource}
-          columns={columns}
-          pagination={false}
-          size="small"
-          bordered
-          scroll={{ y: "calc(100vh - 220px)" }}
-        />
+        {detailsLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Table
+            dataSource={dataSource}
+            columns={columns}
+            pagination={false}
+            size="small"
+            bordered
+            scroll={{ y: "calc(100vh - 220px)" }}
+          />
+        )}
       </Drawer>
 
       {date && (

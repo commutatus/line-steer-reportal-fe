@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
-import { Empty, Modal, Tabs, message } from "antd";
+import { Empty, Modal, Tabs } from "antd";
 import RootLayout from "@/common/layouts/root-layout";
 import { CalendarPlan, TablePlan } from "@/common/components/plan-views";
 import AuditHistoryTab from "@/common/components/audit-history-tab/AuditHistoryTab";
 import DayPlanSheet from "./components/DayPlanSheet";
 import DayViewModal from "@/common/components/day-view-modal";
-import { TimeSlot } from "@/common/utils/data/types";
 import { useQuery } from "@apollo/client";
 import { GET_LOAD_SCHEDULED_DAYS } from "@/common/graphql/consumer.graphql";
 import { GetLoadScheduleDaysQuery, GetLoadScheduleDaysQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
@@ -47,10 +46,11 @@ const Consumer = () => {
   const [isDayPlanSheetOpen, setIsDayPlanSheetOpen] = useState(false);
   const [isDayViewModalOpen, setIsDayViewModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedLoadScheduleDayId, setSelectedLoadScheduleDayId] = useState<number | null>(null);
 
   const handleDayClick = (date: string) => {
     const loadScheduleDay = loadScheduledDays.find((day) => day.date === date);
-    if (!loadScheduleDay?.loadSchedules?.length) {
+    if (!loadScheduleDay?.status) {
       const formattedDate = dayjs(date).format("MMMM D, YYYY");
       Modal.info({
         icon: <FontAwesomeIcon icon={faBan} className="text-red-500 text-2xl mr-2" />,
@@ -62,6 +62,7 @@ const Consumer = () => {
     }
     const isPastDate = dayjs(date).isBefore(dayjs());
     setSelectedDate(date);
+    setSelectedLoadScheduleDayId(Number(loadScheduleDay.id));
     if (isPastDate) {
       setIsDayViewModalOpen(true);
     } else {
@@ -69,50 +70,9 @@ const Consumer = () => {
     }
   };
 
-  const handleSaveTimeSlots = (date: string, timeSlots: TimeSlot[]) => {
-    message.success(`Saved plan for ${date} with ${timeSlots.length} time slots`);
+  const handleSaveTimeSlots = () => {
     setIsDayPlanSheetOpen(false);
   };
-
-  const initialTimeSlots = useMemo((): TimeSlot[] | undefined => {
-    if (!selectedDate) return undefined;
-    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
-    if (!loadScheduleDay?.loadSchedules) return undefined;
-
-    return loadScheduleDay.loadSchedules.map((schedule) => ({
-      time: schedule.startTime || '',
-      mw: schedule.load ?? null,
-      deviation: schedule.factory?.thresholdPercentage ?? null,
-      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
-      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
-    }));
-  }, [selectedDate, loadScheduledDays]);
-
-  const averageTimeSlots = useMemo((): TimeSlot[] | undefined => {
-    if (!selectedDate) return undefined;
-    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
-    if (!loadScheduleDay?.loadSchedules) return undefined;
-
-    return loadScheduleDay.loadSchedules.map((schedule) => ({
-      time: schedule.startTime || '',
-      mw: schedule.pastAverageLoad ?? null,
-      deviation: schedule.factory?.thresholdPercentage ?? null,
-      maximumRequestLimit: schedule.factory?.maximumRequestLimit ?? null,
-      escalationCutoffTime: schedule.factory?.escalationCutoffTime ?? null,
-    }));
-  }, [selectedDate, loadScheduledDays]);
-
-  const loadScheduleIds = useMemo((): string[] | undefined => {
-    if (!selectedDate) return undefined;
-    const loadScheduleDay = loadScheduledDays.find((day) => day.date === selectedDate);
-    if (!loadScheduleDay?.loadSchedules) return undefined;
-    return loadScheduleDay.loadSchedules.map((schedule) => schedule.id);
-  }, [selectedDate, loadScheduledDays]);
-
-  const selectedLoadScheduleDay = useMemo(() => {
-    if (!selectedDate) return null;
-    return loadScheduledDays.find((day) => day.date === selectedDate) ?? null;
-  }, [selectedDate, loadScheduledDays]);
 
   const handleDateChange = (date: dayjs.Dayjs) => {
     setCurrentDate(date);
@@ -191,19 +151,17 @@ const Consumer = () => {
       </div>
 
       <DayViewModal
-        loadScheduleDay={selectedLoadScheduleDay}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayViewModalOpen}
         onOpenChange={setIsDayViewModalOpen}
       />
 
       <DayPlanSheet
         date={selectedDate}
+        loadScheduleDayId={selectedLoadScheduleDayId}
         open={isDayPlanSheetOpen}
         onOpenChange={setIsDayPlanSheetOpen}
         onSave={handleSaveTimeSlots}
-        initialData={initialTimeSlots}
-        averageData={averageTimeSlots}
-        loadScheduleIds={loadScheduleIds}
       />
     </RootLayout>
   );

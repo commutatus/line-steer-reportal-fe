@@ -28,7 +28,9 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
   const apolloClient = useApolloClient();
   const authContext = useAuth();
   const [notificationApi, notificationContextHolder] =
-    notification.useNotification();
+    notification.useNotification({
+      duration: 3,
+    });
   const [authPageState, setAuthPageState] = useState<AuthPageStates>(
     AuthPageStates.login
   );
