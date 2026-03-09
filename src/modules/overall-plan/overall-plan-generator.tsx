@@ -10,14 +10,14 @@ import {
 } from '@/generated/graphql';
 import { useQuery } from '@apollo/client';
 import { GET_LOAD_SCHEDULED_DAYS } from '@/common/graphql/consumer.graphql';
-import { Table, Tag, Select, Empty } from 'antd';
+import { Table, Select, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { fillConfig } from '@/common/constants/plan-status';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useGlobals } from '@/common/context/globals';
 import ExportFactoryDetailsButton from '../consumer/components/ExportFactoryDetailsButton';
 import DayViewModal from '@/common/components/day-view-modal/day-view-modal';
 import { FilterOutlined } from '@ant-design/icons';
+import StatusTag from '@/common/status-tag';
 
 const presentDate = dayjs();
 
@@ -134,13 +134,10 @@ const OverAllPlanGenerator = () => {
             return <span className="text-gray-400">—</span>;
           }
           return (
-            <Tag
-              color={config.color}
-              className="cursor-pointer"
+            <StatusTag
+              status={status}
               onClick={() => handleStatusClick(record.date, factory.id)}
-            >
-              <FontAwesomeIcon icon={config.icon} /> {config.label}
-            </Tag>
+            />
           );
         },
       });
