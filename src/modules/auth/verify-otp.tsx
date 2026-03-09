@@ -30,8 +30,12 @@ const parseOtpTime = (seconds: number) => {
   return `${mm}:${ss}`;
 };
 
+interface OTPFormValues {
+  otp: string;
+}
+
 const VerifyOtp = (props: VerifyOtpProps) => {
-  const [otpValue, setOtpValue] = useState<string>("");
+  const [form] = Form.useForm<OTPFormValues>();
   const [otpTimeRemaining, setOtpTimeRemaining] =
     useState<number>(OTP_COOLDOWN_SECONDS);
   const [verifyOtp, { loading: verifyingOtp }] = useMutation<
@@ -53,14 +57,12 @@ const VerifyOtp = (props: VerifyOtpProps) => {
 
   const canResendOtp = otpTimeRemaining <= 0;
 
-  const handleOtpChange = (value: string) => {
-    setOtpValue(value);
-  };
+  const otpValue = Form.useWatch("otp", form);
 
-  const isOtpComplete = otpValue.length === 6;
+  const isOtpComplete = otpValue?.length === 6;
 
-  const handleVerifyOtp = (otp?: string) => {
-    const otpToVerify = otp || otpValue;
+  const handleVerifyOtp = (values: OTPFormValues) => {
+    const otpToVerify = values.otp;
     if (!otpToVerify || !props.userEmail) {
       return;
     }
@@ -129,7 +131,11 @@ const VerifyOtp = (props: VerifyOtpProps) => {
   };
 
   return (
-    <Form className="flex flex-col items-center gap-2">
+    <Form
+      className="flex flex-col items-center gap-2"
+      onFinish={handleVerifyOtp}
+      form={form}
+    >
       <Button
         type="text"
         icon={<ArrowLeftOutlined />}
@@ -147,22 +153,30 @@ const VerifyOtp = (props: VerifyOtpProps) => {
           We sent a code to <strong>{props.userEmail}</strong>
         </Text>
       </div>
-      <Form.Item>
+      <Form.Item
+        name="otp"
+        rules={[
+          {
+            required: true,
+            message: "Please enter the OTP",
+          },
+        ]}
+      >
         <Input.OTP
           length={6}
-          onChange={handleOtpChange}
           disabled={verifyingOtp}
           size="large"
           inputMode="numeric"
+          onInput={(val) => form.setFieldsValue({ otp: val.join("") })} // Default onChange isn't working for OtpInput
         />
       </Form.Item>
       <Button
         type="primary"
-        onClick={() => handleVerifyOtp()}
         loading={verifyingOtp}
         disabled={!isOtpComplete}
         size="large"
         block
+        htmlType="submit"
       >
         Submit OTP
       </Button>
