@@ -60,8 +60,8 @@ export const GlobalsProvider = ({ children }: { children: ReactNode }) => {
   const handleLogout = useCallback(() => {
     authContext.logout();
     currentPark.resetPark();
-    setAuthPageState?.(AuthPageStates.login);
     apolloClient.resetStore(); // Clear Apollo cache on logout
+    setAuthPageState?.(AuthPageStates.login);
   }, [authContext, currentPark, apolloClient, setAuthPageState]);
 
   const contextValue = useMemo(() => {
