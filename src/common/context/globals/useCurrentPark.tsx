@@ -120,11 +120,13 @@ const useCurrentPark = ({
   useEffect(() => {
     const isParkIdValid = selectedParkId && parks.some((p) => p.id === selectedParkId);
     
-    if (!isParkIdValid && parks.length > 0) {
-      setSelectedParkId(parks[0].id);
-    } else if (!isParkIdValid && parks.length === 0) {
-      setSelectedParkId(null);
-      setSelectedFactoryId(null);
+    if (!isParkIdValid) {
+      if (parks.length > 0) {
+        setSelectedParkId(parks[0].id);
+      } else {
+        setSelectedParkId(null);
+        setSelectedFactoryId(null);
+      }
     }
   }, [parks, selectedParkId]);
 
