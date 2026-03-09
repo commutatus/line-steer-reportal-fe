@@ -106,10 +106,10 @@ const DayViewModal = ({
         bottom: 0,
       },
       grid: {
-        left: 50,
-        right: 20,
-        top: 20,
-        bottom: 40,
+        left: "3%",
+        right: "3%",
+        top: "8%",
+        bottom: "15%",
       },
       xAxis: {
         type: "category",
