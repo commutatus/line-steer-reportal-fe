@@ -4,10 +4,11 @@ import { Checkbox } from "antd";
 import ReactECharts from "echarts-for-react";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
-import { GetOverallPlanQuery, GetOverallPlanQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
-import { OVERALL_PLAN_QUERY } from "@/common/graphql/consumer.graphql";
+import { GetSlotLevelLoadDataQuery, GetSlotLevelLoadDataQueryVariables, LoadScheduleDaySortColumn, SortDirection } from "@/generated/graphql";
+import { GET_SLOT_LEVEL_LOAD_DATA } from "@/common/graphql/consumer.graphql";
 import { useGlobals } from "@/common/context/globals";
 import { UserType } from "@/common/hooks/useCurrentUser";
+import { convertToUTCHoursFormat } from "@/common/utils/helpers";
 import ExportScheduleButton from "../consumer/components/ExportScheduleButton";
 import PageLoader from "@/common/components-ui/page-loader/page-loader";
 
@@ -28,10 +29,10 @@ type ChartSeries = {
 
 const LoadGraph = () => {
   const dateRange = {
-    from: presentDate.subtract(7, 'day').format("YYYY-MM-DD"),
+    from: presentDate.format("YYYY-MM-DD"),
     to: presentDate.format("YYYY-MM-DD"),
   };
-  const { data, loading: isLoadGraphLoading } = useQuery<GetOverallPlanQuery, GetOverallPlanQueryVariables>(OVERALL_PLAN_QUERY, {
+  const { data, loading: isLoadGraphLoading } = useQuery<GetSlotLevelLoadDataQuery, GetSlotLevelLoadDataQueryVariables>(GET_SLOT_LEVEL_LOAD_DATA, {
     variables: {
       sort: {
         column: LoadScheduleDaySortColumn.Date,
@@ -44,35 +45,25 @@ const LoadGraph = () => {
   });
   const { currentUser } = useGlobals();
   const { userType } = currentUser ?? {};
-  const loadSummary = useMemo(() => data?.loadSummary?.data ?? [], [data]);
+  const loadScheduleDays = useMemo(() => data?.loadScheduleDays?.data ?? [], [data]);
 
-  const availableParks = useMemo(() => {
-    if (!loadSummary.length) return [];
-    const parkMap = new Map();
-    loadSummary.forEach((day) => {
-      day.parkLoads?.forEach((parkLoad) => {
-        if (parkLoad.park?.id && parkLoad.park?.name) {
-          parkMap.set(parkLoad.park.id, parkLoad.park.name);
+  const availableFacilities = useMemo(() => {
+    if (!loadScheduleDays.length) return [];
+    const facilityMap = new Map();
+    for (const day of loadScheduleDays) {
+      if (userType === UserType.CONSUMER) {
+        if (day.park?.id && day.park?.name) {
+          facilityMap.set(day.park.id, day.park.name);
         }
-      });
-    });
-    return Array.from(parkMap, ([id, name]) => ({ id, name }));
-  }, [loadSummary]);
-
-  const availableFactories = useMemo(() => {
-    if (!loadSummary.length) return [];
-    const factoryMap = new Map();
-    loadSummary.forEach((day) => {
-      day.factoryLoads?.forEach((factoryLoad) => {
-        if (factoryLoad.factory?.id && factoryLoad.factory?.name) {
-          factoryMap.set(factoryLoad.factory.id, factoryLoad.factory.name);
+      } else {
+        if (day.factory?.id && day.factory?.name) {
+          facilityMap.set(day.factory.id, day.factory.name);
         }
-      });
-    });
-    return Array.from(factoryMap, ([id, name]) => ({ id, name }));
-  }, [loadSummary]);
+      }
+    }
+    return Array.from(facilityMap, ([id, name]) => ({ id, name }));
+  }, [loadScheduleDays, userType]);
 
-  const availableFacilities = useMemo(() => userType === UserType.CONSUMER ? availableParks : availableFactories, [availableParks, availableFactories, userType]);
   const facilityTitle = userType === UserType.CONSUMER ? "Parks" : "Factories";
 
   const [visibleFacilities, setVisibleFacilities] = useState<Record<string, boolean>>({});
@@ -87,20 +78,42 @@ const LoadGraph = () => {
   }, [availableFacilities]);
 
   const chartOption = useMemo(() => {
-    const dates = loadSummary.map((item) => dayjs(item.date).format('MMM DD'));
+    if (!loadScheduleDays.length) {
+      return {
+        tooltip: { trigger: 'axis' as const },
+        legend: { bottom: 0, icon: 'circle' },
+        grid: { left: '3%', right: '4%', bottom: '15%', top: '8%', containLabel: true },
+        xAxis: { type: 'category' as const, data: [] },
+        yAxis: { type: 'value' as const, name: 'Load (MWh)' },
+        series: [],
+      };
+    }
+    const uniqueTimeSlots = Array.from(
+      new Set(
+        loadScheduleDays.flatMap((day) => 
+          day.loadSchedules?.map((schedule) => convertToUTCHoursFormat(schedule.startTime)) ?? []
+        )
+      )
+    ).sort();
 
     const series: ChartSeries[] = [];
 
     availableFacilities.forEach((facility, index) => {
       if (!visibleFacilities[facility.id]) return;
       const color = CHART_COLORS[index % CHART_COLORS.length];
-      const seriesData = loadSummary.map((item) => {
+      const facilityDay = loadScheduleDays.find((day) => {
         if (userType === UserType.CONSUMER) {
-          const parkLoad = item.parkLoads?.find((p) => p.park?.id === facility.id);
-          return parkLoad?.totalLoad ?? 0;
+          return day.park?.id === facility.id;
         }
-        const factoryLoad = item.factoryLoads?.find((f) => f.factory?.id === facility.id);
-        return factoryLoad?.totalLoad ?? 0;
+        return day.factory?.id === facility.id;
+      });
+
+      const seriesData = uniqueTimeSlots.map((slot) => {
+        if (!facilityDay?.loadSchedules) return 0;
+        const schedule = facilityDay.loadSchedules.find(
+          (s) => convertToUTCHoursFormat(s.startTime) === slot
+        );
+        return schedule?.load ?? 0;
       });
 
       series.push({
@@ -115,9 +128,15 @@ const LoadGraph = () => {
     });
 
     if (showTotal) {
-      const totalData = loadSummary.map((item) =>
-        userType === UserType.CONSUMER ? item.totalParkLoad : item.totalFactoryLoad,
-      );
+      const totalData = uniqueTimeSlots.map((slot) => {
+        return loadScheduleDays.reduce((sum, day) => {
+          const schedule = day.loadSchedules?.find(
+            (s) => convertToUTCHoursFormat(s.startTime) === slot
+          );
+          return sum + (schedule?.load ?? 0);
+        }, 0);
+      });
+      
       series.push({
         name: 'Total',
         type: 'line',
@@ -147,9 +166,12 @@ const LoadGraph = () => {
       },
       xAxis: {
         type: 'category' as const,
-        data: dates,
+        data: uniqueTimeSlots,
         boundaryGap: false,
-        axisLabel: { fontSize: 12 },
+        axisLabel: { 
+          fontSize: 12, 
+          rotate: 45,
+        },
         axisLine: { lineStyle: { color: '#64748b' } },
       },
       yAxis: {
@@ -161,7 +183,7 @@ const LoadGraph = () => {
       },
       series,
     };
-  }, [loadSummary, userType, availableFacilities, visibleFacilities, showTotal]);
+  }, [loadScheduleDays, userType, availableFacilities, visibleFacilities, showTotal]);
 
   const handleFacilityToggle = (facilityId: string, checked: boolean) => {
     setVisibleFacilities((prev) => ({ ...prev, [facilityId]: checked }));

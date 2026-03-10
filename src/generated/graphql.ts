@@ -571,6 +571,14 @@ export type GetOverallPlanQueryVariables = Exact<{
 
 export type GetOverallPlanQuery = { __typename?: 'Query', loadSummary?: { __typename?: 'LoadSummaryPage', data: Array<{ __typename?: 'LoadSummary', date: any, totalFactoryLoad: number, totalParkLoad: number, parkLoads: Array<{ __typename?: 'ParkLoadEntry', totalLoad: number, park: { __typename?: 'Park', id: string, name?: string | null } }>, factoryLoads: Array<{ __typename?: 'FactoryLoadEntry', totalLoad: number, factory: { __typename?: 'Factory', id: string, name?: string | null } }> }> } | null };
 
+export type GetSlotLevelLoadDataQueryVariables = Exact<{
+  filters?: InputMaybe<LoadScheduleDayFilterInput>;
+  sort?: InputMaybe<LoadScheduleDaySortInput>;
+}>;
+
+
+export type GetSlotLevelLoadDataQuery = { __typename?: 'Query', loadScheduleDays?: { __typename?: 'LoadScheduleDayPagingType', data: Array<{ __typename?: 'LoadScheduleDay', date: any, id: string, status?: LoadScheduleDayStatusEnum | null, totalLoad: number, park?: { __typename?: 'Park', id: string, name?: string | null } | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null, loadSchedules?: Array<{ __typename?: 'LoadSchedule', id: string, startTime?: any | null, endTime?: any | null, load?: number | null, park?: { __typename?: 'Park', id: string, name?: string | null } | null, factory?: { __typename?: 'Factory', id: string, name?: string | null } | null }> | null }> } | null };
+
 export type ExportScheduleDetailsMutationVariables = Exact<{
   input: ExportScheduleDetailsInput;
 }>;
